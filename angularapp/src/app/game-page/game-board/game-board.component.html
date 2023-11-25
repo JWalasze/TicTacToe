@@ -1,0 +1,53 @@
+<!-- Add this HTML to your component's HTML file -->
+<div class="title">
+  Player1 vs Player2
+</div>
+
+<div class="result">
+  And the winner is...
+</div>
+
+<div class="timer">
+  00:00:05
+</div>
+
+
+<div class="tic-tac-toe-board">
+  <div class="row">
+    <div class="cell">
+      <img src="../assets/crosss.png" />
+    </div>
+    <div class="cell">
+      <img src="../assets/crosss.png" />
+    </div>
+    <div class="cell">
+      <img src="../assets/crosss.png" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="cell">
+      <img src="../assets/cross.png" />
+    </div>
+    <div class="cell">
+      <img src="../assets/cross.png" />
+    </div>
+    <div class="cell">
+      <img src="../assets/cross.png" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="cell">
+      <img src="../assets/crosss.png" />
+    </div>
+    <div class="cell">
+      <img src="../assets/crosss.png" />
+    </div>
+    <div class="cell">
+      <img src="../assets/crosss.png" />
+    </div>
+  </div>
+</div>
+
+<div class="my" [@changeColor]="colorState" (click)="toggleColor()">Click me to change color</div>
+
+<button mat-button>Exit game</button>

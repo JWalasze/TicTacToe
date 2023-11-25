@@ -12,6 +12,5 @@
   <ItemGroup>
     <Folder Include="src\app\auth-page\login\" />
     <Folder Include="src\app\auth-page\create-account\" />
-    <Folder Include="src\app\Auth\" />
   </ItemGroup>
 </Project>

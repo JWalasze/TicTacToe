@@ -1,0 +1,68 @@
+/* ranking.component.css */
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.column-1 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.column-1-left,
+.column-1-right,
+.column-2 {
+  border: 1px solid #ccc;
+  padding: 15px;
+  background-color: #f9f9f9;
+}
+
+div {
+    
+}
+
+
+
+.horizontal-line {
+  border-top: 1px solid #000000; /* Black color */
+  margin: 20px 0; /* Adjust margin as needed */
+}
+
+h2 {
+  font-family: 'Raleway', sans-serif;
+  font-size: 28px;
+}
+
+.rounded-box {
+  background-color: #ffffff; /* White background color */
+  border: 1px solid #ccc; /* Border color */
+  border-radius: 8px; /* Border radius for rounded corners */
+  padding: 20px; /* Adjust padding as needed */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle box shadow */
+}
+
+.my-history {
+    margin: 20px 0 0 0 ;
+    height: 50vh;
+}
+
+.ranking {
+    height: 100%;
+}
+
+.start-game {
+    margin: 0;
+}
+
+button {
+  background-color: #4caf50;
+  color: #fff;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
