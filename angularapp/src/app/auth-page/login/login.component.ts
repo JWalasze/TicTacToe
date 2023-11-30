@@ -25,7 +25,12 @@ export class LoginComponent implements OnInit {
 
   onSubmit() {
     // Handle login logic here
-    console.log('Login form submitted:');
+    console.log("here I am")
     this.router.navigate(["/wait_room"]);
+  }
+
+  createProfile() {
+    console.log("whatthefuck");
+    this.router.navigate(["/create_profile"]);
   }
 }

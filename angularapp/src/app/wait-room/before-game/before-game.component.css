@@ -24,7 +24,9 @@ div {
     
 }
 
-
+col {
+    height: 40vh;
+}
 
 .horizontal-line {
   border-top: 1px solid #000000; /* Black color */
@@ -46,11 +48,15 @@ h2 {
 
 .my-history {
     margin: 20px 0 0 0 ;
-    height: 50vh;
+    /*height: 40vh;*/
+}
+
+.my-score {
 }
 
 .ranking {
     height: 100%;
+    margin-top: 20px;
 }
 
 .start-game {

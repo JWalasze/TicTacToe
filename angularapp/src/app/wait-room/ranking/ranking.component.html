@@ -1,1 +1,15 @@
-<p>ranking works!</p>
+<ng-container *ngIf="ranking$">
+  <div>
+    <div class="row">
+      <div class="col">Position</div>
+      <div class="col">Player</div>
+      <div class="col">Score</div>
+    </div>
+    <div *ngFor="let r of ranking$; let i = index" class="row">
+      <div class="col">{{i+1}}</div>
+      <div class="col">{{r.username}}</div>
+      <div class="col">{{r.wonGames}}</div>
+    </div>
+  </div>
+</ng-container>
+

@@ -1,12 +1,10 @@
-﻿namespace Lib.Models;
+﻿namespace Lib.Dtos;
 
-public record Player
+public record PlayerDto
 {
     public int Id { get; set; }
 
     public string Username { get; set; }
-
-    public string Password { get; set; } 
 
     public int WonGames { get; set; }
 

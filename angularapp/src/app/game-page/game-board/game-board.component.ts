@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { animate, state, style, transition, trigger } from '@angular/animations';
+import { SignalRService } from '../services/HubService';
 
 
 @Component({
@@ -19,6 +20,12 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
   ]
 })
 export class GameBoardComponent {
+  constructor(private signalRService: SignalRService) { }
+
+  ngOnInit(): void {
+    this.signalRService.startConnection();
+  }
+
   colorState = 'initial';
   toggleColor() {
     this.colorState = (this.colorState === 'initial') ? 'final' : 'initial';

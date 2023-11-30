@@ -1,5 +1,8 @@
 using Lib;
+using Lib.Services;
+using Lib.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using webapi.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,8 +12,11 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<ApplicationContext>(options => 
-    options.UseSqlServer());
+builder.Services.AddSignalR();
+builder.Services.AddDbContext<ApplicationDbContext>(options => 
+    options.UseSqlServer(builder.Configuration["ConnectionStrings:MyConnectionString"]));
+builder.Services.AddTransient<IGameService, GameService>();
+builder.Services.AddTransient<IRankingService, RankingService>();
 
 var app = builder.Build();
 
@@ -21,10 +27,17 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors(b => b
+    .AllowAnyHeader()
+    .AllowAnyMethod()
+    .AllowAnyOrigin()
+);
+
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<GameHub>("/moves");
 
 app.Run();

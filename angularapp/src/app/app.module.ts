@@ -5,9 +5,9 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppComponent } from './app.component';
 import { AuthPageModule } from './auth-page/auth-page.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { WaitRoomModule } from './wait-room/wait-room.module';
 import { AppRoutingModule } from './app-routing.module';
 import { GamePageModule } from './game-page/game-page.module';
+import { WaitRoomModule } from './wait-room/wait-room.module';
 
 @NgModule({
   declarations: [
