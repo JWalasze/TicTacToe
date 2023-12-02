@@ -1,37 +1,54 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Lib.Enums;
+using Lib.TicTacToeGame;
+using Microsoft.AspNetCore.SignalR;
+using Newtonsoft.Json;
 
 namespace webapi.Hubs;
 
 public class GameHub : Hub
 {
-    private static readonly ICollection<string> WaitingPlayers = new List<string>(); //Trzymaloby connection Id po to żeby..
+    private static readonly ICollection<string> WaitingPlayers = new List<string>();
 
-    public async Task JoinPreGameQueue(string param)
+    public async Task Hello()
     {
-        if (WaitingPlayers.Count != 0)
-        {
-            await Groups.AddToGroupAsync(param, "temp"); //tu dodac 1 i 2 playera oraz usunac z queue obydwoch
-            await Groups.AddToGroupAsync(WaitingPlayers.First(), "temp");
-            Console.WriteLine("...");
+        var serializedBoard = JsonConvert.SerializeObject(new Board().TicTacToeBoard, Formatting.Indented);
+        var serializedNextMove = JsonConvert.SerializeObject(NextMove.Cross);
 
-            WaitingPlayers.Remove(WaitingPlayers.First());
-        }
-        Console.WriteLine(param);
-        WaitingPlayers.Add(param);
+        Console.WriteLine(JsonConvert.SerializeObject(new Board().TicTacToeBoard, Formatting.Indented));
+        Console.WriteLine(JsonConvert.SerializeObject(NextMove.Circle));
+
+        await Clients.All.SendAsync("MadeMove", serializedBoard, serializedNextMove);
+        await Clients.All.SendAsync("ReceiveMessage", "Method has been invoked!");
     }
 
-    //public async Task LeavePreGameQueue()
-    //{
+    public override async Task OnConnectedAsync()
+    {
+        var connectionId = Context.ConnectionId;
 
-    //}
+        if (WaitingPlayers.Count != 0)
+        {
+            await Groups.AddToGroupAsync(connectionId, "Game");
+            await Groups.AddToGroupAsync(WaitingPlayers.First(), "Game");
 
-    //public Task JoinGame()
-    //{
+            Console.WriteLine("Group 'Game' has been created!");
 
-    //}
+            await Clients.Group("Game").SendAsync("GameStart", $"Group 'Game' has been created! " +
+                                                              $"In game we have: {connectionId} and {WaitingPlayers.First()}");
+            
+            WaitingPlayers.Remove(WaitingPlayers.First());
+        }
+        else
+        {
+            WaitingPlayers.Add(connectionId);
+        }
 
-    //public Task LeaveGame()
-    //{
+        Console.WriteLine("ConnectionId: " + connectionId);
+        await base.OnConnectedAsync();
+    }
 
-    //}
+    public override Task OnDisconnectedAsync(Exception? exception)
+    {
+        Console.WriteLine(exception);
+        return base.OnDisconnectedAsync(exception);
+    }
 }

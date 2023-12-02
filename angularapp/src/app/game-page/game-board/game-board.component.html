@@ -1,4 +1,3 @@
-<!-- Add this HTML to your component's HTML file -->
 <div class="title">
   Player1 vs Player2
 </div>
@@ -48,6 +47,10 @@
   </div>
 </div>
 
-<div class="my" [@changeColor]="colorState" (click)="toggleColor()">Click me to change color</div>
+<!--<div class="my" [@changeColor]="colorState" (click)="toggleColor()">Click me to change color</div>-->
 
-<button mat-button>Exit game</button>
+<button mat-button (click)="test()">Exit game</button>
+<button mat-button (click)="getState()">Exit game</button>
+<button mat-button (click)="endGameSession()"> KURWA END</button>
+
+

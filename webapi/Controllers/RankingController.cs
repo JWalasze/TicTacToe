@@ -16,6 +16,7 @@ public class RankingController : ControllerBase
     }
 
     [HttpGet("[action]")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetRanking(
         [FromQuery] int page = 1, 
         [FromQuery] int size = 10)
@@ -25,6 +26,8 @@ public class RankingController : ControllerBase
     }
 
     [HttpGet("[action]")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetPlayerHistory(
         [FromQuery] int playerId,
         [FromQuery] int page = 1,
@@ -40,6 +43,8 @@ public class RankingController : ControllerBase
     }
 
     [HttpGet("[action]")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetPlayerScore([FromQuery] int playerId)
     {
         if (CheckingParameters.AreIntParametersDefault(playerId))
@@ -48,7 +53,6 @@ public class RankingController : ControllerBase
         }
 
         var result = await _rankingService.GetPlayerScore(playerId);
-
-        return result is null ? Problem("Internal Server Error: Player ID not found!", statusCode: 500) : Ok(result);
+        return result is null ? Problem("Player ID not found!", statusCode: 400) : Ok(result);
     }
 }

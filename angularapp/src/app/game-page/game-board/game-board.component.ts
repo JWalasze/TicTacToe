@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { SignalRService } from '../services/HubService';
+import { SignalRService } from '../services/hub.service';
 
 
 @Component({
@@ -21,9 +21,26 @@ import { SignalRService } from '../services/HubService';
 })
 export class GameBoardComponent {
   constructor(private signalRService: SignalRService) { }
+    
+  //ngOnInit(): void {
+  //  this.signalRService.startConnection();
+  //}
 
-  ngOnInit(): void {
-    this.signalRService.startConnection();
+  //ngOnDestroy(): void {
+  //  console.log('WTF');
+  //  this.signalRService.endConnection();
+  //}
+
+  test(): void {
+    this.signalRService.getConnection();
+  }
+
+  getState() {
+    this.signalRService.getState();
+  }
+
+  endGameSession(): void {
+    this.signalRService.endConnection();
   }
 
   colorState = 'initial';

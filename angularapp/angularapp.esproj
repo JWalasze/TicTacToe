@@ -12,7 +12,7 @@
   <ItemGroup>
     <Folder Include="src\app\auth-page\login\" />
     <Folder Include="src\app\auth-page\create-account\" />
-    <Folder Include="src\app\game-page\services\" />
+    <Folder Include="src\app\game-page\models\" />
     <Folder Include="src\app\wait-room\models\" />
     <Folder Include="src\app\wait-room\services\" />
   </ItemGroup>

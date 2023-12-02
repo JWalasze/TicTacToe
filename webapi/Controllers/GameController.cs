@@ -1,5 +1,6 @@
 ﻿using Lib;
 using Lib.Services.Interfaces;
+using Lib.TicTacToeGame;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +31,8 @@ namespace webapi.Controllers
             var id = HttpContext.Connection.Id;
 
             Console.WriteLine("WHATEVER " + id);
+
+            var p = new Board();
 
             var x = _hubContext.Groups.AddToGroupAsync(id, "queue");
             await Task.WhenAll(x);

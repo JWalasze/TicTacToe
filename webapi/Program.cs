@@ -30,8 +30,32 @@ if (app.Environment.IsDevelopment())
 app.UseCors(b => b
     .AllowAnyHeader()
     .AllowAnyMethod()
-    .AllowAnyOrigin()
+    .AllowCredentials()
+    //.AllowAnyOrigin()
+    .SetIsOriginAllowed((host) => true)
 );
+//app.UseRouting();
+//app.UseWebSockets();
+
+//app.Use(async (context, next) =>
+//{
+//    if (context.Request.Path == "/moves")
+//    {
+//        if (context.WebSockets.IsWebSocketRequest)
+//        {
+//            using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+//        }
+//        else
+//        {
+//            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+//        }
+//    }
+//    else
+//    {
+//        await next(context);
+//    }
+
+//});
 
 app.UseHttpsRedirection();
 
