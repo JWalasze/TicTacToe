@@ -1,13 +1,5 @@
 export interface Board {
-  board: Piece[][];
-
-  //constructor() {
-  //  this.board = [
-  //    [Piece.Empty, Piece.Empty, Piece.Empty],
-  //    [Piece.Empty, Piece.Empty, Piece.Empty],
-  //    [Piece.Empty, Piece.Empty, Piece.Empty]
-  //  ];
-  //}
+  TicTacToeBoard: Piece[][];
 }
 
 export enum Piece {

@@ -1,54 +1,108 @@
-﻿using Lib.Enums;
-using Lib.TicTacToeGame;
+﻿using System.Net.Mime;
+using System.Text;
+using Lib.Dtos;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
+using webapi.Hubs.Static;
 
 namespace webapi.Hubs;
 
 public class GameHub : Hub
 {
-    private static readonly ICollection<string> WaitingPlayers = new List<string>();
+    private static readonly ICollection<string> WaitingPlayers = new HashSet<string>();
 
-    public async Task Hello()
+    public async Task UpdateBoardAfterMove(string updatedBoard, string whoMadeMove, string groupName,
+        ILogger<GameHub> logger, IHttpClientFactory httpClientFactory)
     {
-        var serializedBoard = JsonConvert.SerializeObject(new Board().TicTacToeBoard, Formatting.Indented);
-        var serializedNextMove = JsonConvert.SerializeObject(NextMove.Cross);
+        var deserializedBoard = GameLogic.DeserializeBoard(updatedBoard) ?? throw new JsonException("Deserialization for BOARD can't be performed!");
+        var whoHasWon = GameLogic.SearchForTheWInner(deserializedBoard);
+        if (whoHasWon is not null)
+        {
+            var httpClient = httpClientFactory.CreateClient();
+            await Clients.Caller.InvokeAsync<(DateTime, DateTime)>("MeasureTime", default);
+            var gameToBeSaved = new GameToBeSavedDto()
+            {
 
-        Console.WriteLine(JsonConvert.SerializeObject(new Board().TicTacToeBoard, Formatting.Indented));
-        Console.WriteLine(JsonConvert.SerializeObject(NextMove.Circle));
+            };
+            var content = new StringContent(
+                JsonConvert.SerializeObject(gameToBeSaved),
+                Encoding.UTF8,
+                MediaTypeNames.Application.Json);
 
-        await Clients.All.SendAsync("MadeMove", serializedBoard, serializedNextMove);
-        await Clients.All.SendAsync("ReceiveMessage", "Method has been invoked!");
+            var responseMessage = await httpClient.PostAsync("/api/Game/SaveGame", content); 
+            //Jeszcze trzeba sprawdzic moze czy sie udalo
+
+            await Clients.Group(groupName).SendAsync("GameOver", whoHasWon);
+            return;
+        }
+        //Niepoprawny group z klienta dlatego nie bylo wiadomosci
+        //Trzeba sprawdzac czy sa w grze napewno obydwoje...
+
+        var deserializedNextMove = GameLogic.DeserializeNextMove(whoMadeMove) ?? throw new JsonException("Deserialization for NEXT_MOVE can't be performed!");
+        var whoIsNext = GameLogic.WhoWillBeNext(deserializedNextMove);
+
+        await Clients.Group(groupName).SendAsync("MadeMove", updatedBoard, whoIsNext, "Board has been updated!");
+        logger.LogInformation("Method 'UpdateBoardAfterMove' has been invoked.");
     }
 
     public override async Task OnConnectedAsync()
     {
         var connectionId = Context.ConnectionId;
+        var randomGenerator = new Random();
 
-        if (WaitingPlayers.Count != 0)
+        string? randomPlayerConnectionId = null;
+        var shouldGameStart = false;
+
+        lock (WaitingPlayers)
         {
-            await Groups.AddToGroupAsync(connectionId, "Game");
-            await Groups.AddToGroupAsync(WaitingPlayers.First(), "Game");
+            if (WaitingPlayers.Count is not 0)
+            {
+                var randomPlayer = randomGenerator.Next(0, WaitingPlayers.Count - 1);
+                randomPlayerConnectionId = WaitingPlayers.ToList()[randomPlayer];
+                shouldGameStart = true;
 
-            Console.WriteLine("Group 'Game' has been created!");
-
-            await Clients.Group("Game").SendAsync("GameStart", $"Group 'Game' has been created! " +
-                                                              $"In game we have: {connectionId} and {WaitingPlayers.First()}");
-            
-            WaitingPlayers.Remove(WaitingPlayers.First());
+                WaitingPlayers.Remove(randomPlayerConnectionId);
+            }
+            else
+            {
+                WaitingPlayers.Add(connectionId);
+            }
         }
-        else
+
+        if (shouldGameStart && randomPlayerConnectionId is not null)
         {
-            WaitingPlayers.Add(connectionId);
+            var groupName = GameLogic.CreateUniqueGroupName();
+
+            await Groups.AddToGroupAsync(connectionId, groupName);
+            await Groups.AddToGroupAsync(randomPlayerConnectionId, groupName);
+
+            //Invoke methode to po prostu zapisze juz na poczatku do bazy!!! juz zalazek
+            //ALbo czekaj...InvokeAsync żeby dostać informacje o grze????
+            var player1Info = await Clients.Client(connectionId).InvokeAsync<string>("GetPlayerInfo", default);
+            var player2Info = await Clients.Client(randomPlayerConnectionId).InvokeAsync<string>("GetPlayerInfo", default);
+            Console.WriteLine(player1Info);
+            Console.WriteLine(player2Info);
+            //i pozniej zapisać to co bedzie zwrocone...
+
+            await Clients.Group(groupName).SendAsync("GameStart", $"Group {groupName} has been created! " +
+                                                                  $"In game we have: {connectionId} and {randomPlayerConnectionId}");
         }
 
-        Console.WriteLine("ConnectionId: " + connectionId);
         await base.OnConnectedAsync();
     }
 
-    public override Task OnDisconnectedAsync(Exception? exception)
+    public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        Console.WriteLine(exception);
-        return base.OnDisconnectedAsync(exception);
+        lock (WaitingPlayers)
+        {
+            var connectionsToDelete = WaitingPlayers.FirstOrDefault(connectionId => connectionId == Context.ConnectionId);
+            if (connectionsToDelete is not null)
+            {
+                WaitingPlayers.Remove(connectionsToDelete);
+            }
+        }
+
+        await base.OnDisconnectedAsync(exception);
     }
 }

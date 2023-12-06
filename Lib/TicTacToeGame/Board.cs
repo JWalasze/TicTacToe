@@ -1,13 +1,22 @@
-﻿using System.Reflection.Metadata.Ecma335;
-using Lib.Enums;
+﻿using Lib.Enums;
 
 namespace Lib.TicTacToeGame;
 
 public class Board
 {
-    public Piece[][] TicTacToeBoard { get; }
+    public Piece[][] TicTacToeBoard;
 
     public Board()
+    {
+        TicTacToeBoard = new Piece[3][];
+
+        for (var i = 0; i < 3; i++)
+        {
+            TicTacToeBoard[i] = new[] { Piece.Empty, Piece.Empty, Piece.Empty };
+        }
+    }
+
+    public void SetEmptyBoard()
     {
         TicTacToeBoard = new Piece[3][];
 

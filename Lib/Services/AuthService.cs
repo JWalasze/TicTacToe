@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Lib.Dtos;
+using Lib.Services.Interfaces;
 
-namespace Lib.Services
+namespace Lib.Services;
+
+public class AuthService : IAuthService
 {
-    internal class AuthService
+    public Task CreateNewPlayer(Credentials credentials)
     {
+        throw new NotImplementedException();
     }
 }

@@ -1,36 +1,19 @@
-/* ranking.component.css */
 
-.grid-container {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+container {
+  /*width: 50vh;*/
 }
 
-.column-1 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+.col {
+  /*height: 40vh;*/
 }
 
-.column-1-left,
-.column-1-right,
-.column-2 {
-  border: 1px solid #ccc;
-  padding: 15px;
-  background-color: #f9f9f9;
-}
+row {
 
-div {
-    
-}
-
-col {
-    height: 40vh;
 }
 
 .horizontal-line {
   border-top: 1px solid #000000; /* Black color */
-  margin: 20px 0; /* Adjust margin as needed */
+  margin: 20px 0 0 0; /* Adjust margin as needed */
 }
 
 h2 {
@@ -47,28 +30,75 @@ h2 {
 }
 
 .my-history {
-    margin: 20px 0 0 0 ;
-    /*height: 40vh;*/
+  margin: 20px 0 0 0;
+  /*height: 40vh;*/
 }
 
 .my-score {
 }
 
 .ranking {
-    height: 100%;
-    margin-top: 20px;
+  /* height: 100%;*/
+  margin-top: 20px;
 }
 
 .start-game {
-    margin: 0;
+  margin: 0;
 }
 
 button {
   background-color: #4caf50;
   color: #fff;
-  padding: 10px 15px;
+  padding: 10px 15px 10px 15px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   margin-bottom: 12px;
+  margin-top: 25px;
+  width: 100%;
+
+}
+
+
+.grid-container {
+  display: grid;
+  grid-template-rows: 30% auto;
+  grid-template-columns: auto auto;
+  gap: 20px;
+  height: 75vh;
+  width: 70vw;
+  min-width: 200px;
+}
+
+.grid-item {
+  /* border: 1px solid #000;
+  padding: 10px;
+  background-color: aliceblue;*/
+  background-color: #ffffff; /* White background color */
+  border: 1px solid #ccc; /* Border color */
+  border-radius: 8px; /* Border radius for rounded corners */
+  padding: 20px 20px 0 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle box shadow */
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+@media (max-width: 1000px) {
+  .grid-container {
+    grid-template-columns: auto; /* Set to a single column for smaller screens */
+  }
+}
+
+.grid-item::-webkit-scrollbar {
+  width: 10px; /* Width of the scrollbar */
+}
+
+.grid-item::-webkit-scrollbar-thumb {
+  background-color: #888; /* Color of the scrollbar thumb */
+  border-radius: 6px; /* Round the corners of the thumb */
+}
+
+.grid-item::-webkit-scrollbar-track {
+  background-color: #eee; /* Color of the scrollbar track */
+  border-radius: 6px; /* Round the corners of the track */
 }

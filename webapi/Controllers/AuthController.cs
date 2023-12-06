@@ -1,22 +1,31 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Lib.Dtos;
+using Lib.Services.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace webapi.Controllers
+namespace webapi.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class AuthController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class AuthController : ControllerBase
+    private readonly IAuthService _authService;
+    public AuthController(IAuthService authService)
     {
-        private readonly DbContext _dbContext;
+        _authService = authService;
+    }
 
-        public AuthController(DbContext dbContext)
+    [HttpPost]
+    public async Task<IActionResult> CreateNewPlayer(Credentials credentials)
+    {
+        try
         {
-            _dbContext = dbContext;
+            await _authService.CreateNewPlayer(credentials);
+            return Ok();
         }
-
-        //public Task<IActionResult> CreateNewPlayer([FromBody] Credentials credentials)
-        //{
-
-        //}
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, ex.ToString());
+        }
     }
 }

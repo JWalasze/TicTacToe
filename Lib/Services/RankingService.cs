@@ -1,5 +1,4 @@
 ﻿using Lib.Dtos;
-using Lib.Models;
 using Lib.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -41,7 +40,7 @@ public class RankingService : IRankingService
                 Id = game.Id,
                 Player1Username = game.Player1.Username,
                 Player2Username = game.Player2.Username,
-                StarTime = game.StarTime,
+                StartTime = game.StarTime,
                 EndTime = game.EndTime,
                 WinnerUsername = game.Winner!.Username
             })

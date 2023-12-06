@@ -1,32 +1,76 @@
-// signalr.service.ts
 
-import { Injectable, OnDestroy } from '@angular/core';
-import * as signalR from '@microsoft/signalr';
-import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
+import { Injectable } from '@angular/core';
+import { HubConnection, HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
 import { Board, NextMove } from '../models/board';
+import { environment } from '../../../environment';
+import { Observable } from 'rxjs';
+import { group } from '@angular/animations';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
+  useFactory: () => new SignalRService()
 })
-export class SignalRService implements OnDestroy {
+export class SignalRService {
   private hubConnection: HubConnection;
 
   constructor() {
     this.hubConnection = new HubConnectionBuilder()
-      .withUrl('https://localhost:7166/moves') 
+      .withUrl(environment.hubUrl)
       .build();
 
-    this.hubConnection.on("ReceiveMessage", (message: string) => {
+    this.hubConnection.on("GameStart", (message: string, groupName: string) => {
       console.log(message);
+      console.log("Group name: " + groupName);
+      //I moze tu invoke async żeby
     });
   }
 
-  ngOnDestroy(): void {
-    throw new Error('Method not implemented.');
+  sendPlayerInfo() {
+    this.hubConnection.on("GetPlayerInfo", async () => {
+      const promise = new Promise((resolve) => {
+        setTimeout(() => {
+          resolve("message");
+        }, 1);
+      });
+      return promise;
+    });
+  }
+
+  observeStartOfTheGame(): Observable<string> {
+    return new Observable<string>((observer) => {
+      this.hubConnection.on("GameStart", (message: string, groupName: string) => {
+        console.log(message);
+        console.log("Group name: " + groupName);
+        observer.next(groupName);
+        observer.complete();
+      });
+    });
+  }
+
+  observeChangingBoard(): Observable<[Board, NextMove]> {
+    return new Observable<[Board, NextMove]>((observer) => {
+      this.hubConnection.on("MadeMove", (board: string, nextMove: string, message: string) => {
+        const boardObj = JSON.parse(board) as Board;
+        const nextMoveObj = JSON.parse(nextMove) as NextMove;
+        console.log(JSON.parse(board) as Board);
+        console.log(JSON.parse(nextMove) as NextMove);
+        console.log(message);
+        //console.log("WHo has won???" + whoHasWOn);
+        observer.next([boardObj, nextMoveObj]);
+        observer.complete();
+      });
+    });
   }
 
   startConnection(): void {
-    console.log("WTFSS");
+    this.hubConnection
+      .start()
+      .then(() => {
+        console.log("Session has been sucessfully created!");
+      })
+      .catch((err) => {
+        console.error("Error during setting up a session: " + err.toString());
+      });
   }
 
   endConnection(): void {
@@ -34,55 +78,27 @@ export class SignalRService implements OnDestroy {
       .stop()
       .then(() => {
         console.log('Connection ' + this.hubConnection.connectionId + ' has been ended!');
+      }).catch((err) => {
+        console.error("Couldn't end session: " + this.hubConnection.connectionId + ": " + err.toString())
       });
   }
 
-
-
-  getConnection() {
-   
-    console.log('1' + this.hubConnection.state);
-
-    this.hubConnection.start().then(function () {
-    }).catch(function (err) {
-      return console.error("Aha" + err.toString());
-    });
-
-    console.log('2' + this.hubConnection.state);
-
-    console.log('4' + this.hubConnection.state);
-    this.hubConnection.on('MadeMove', (board: string, nextMove: string) => {
-      console.log("Info from server: ");
-      console.log(board);
-      console.log("No STARA KURWA");
-      console.log(nextMove);
-      console.log("PIERDOLE? NIC BARDZIEJ MYLNEGO");
-      console.log(JSON.parse(board) as Board);
-      console.log(JSON.parse(nextMove) as NextMove);
-      console.log("NO CHOCIAZ KURWA TYLE");
-    });
-  };
-
-  private receiveMessage(arg1: string, arg2: string) {
-    console.log(`Received arguments: ${arg1}, ${arg2}`);
+  getConnectionState(): HubConnectionState {
+    return this.hubConnection.state;
   }
 
-  getState() {
-  
-    console.log('3' + this.hubConnection.state);
-    this.hubConnection.invoke("Hello").then(() => {
-      console.log("Method was sucessfully invoked!");
-    }).catch(function (err) {
-      return console.error("We have error in invoke of the server method" + err.toString());
-    });
-
+  onMadeMove(): void {
+    //this.updateBoard();
   }
 
-  
-
-  test(): void {
-    this.hubConnection.on('DisplayMessage', (message: string) => {
-      console.log(message);
+  updateBoard(board: Board, whoIsNext: NextMove) {
+    const boardStr = JSON.stringify(board);
+    const whoIsNextStr = JSON.stringify(whoIsNext);
+    this.hubConnection.invoke("UpdateBoardAfterMove", boardStr, whoIsNextStr, "tu pozniej group name").then(() => {
+      console.log("Method " + "'UpdateBoardAfterMove'" + " was sucessfully invoked!");
+    }).catch((err) => {
+      console.error("We have an error in invoke of the server method: " + err.toString());
     });
   }
+
 }

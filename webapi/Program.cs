@@ -3,6 +3,7 @@ using Lib.Services;
 using Lib.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using webapi.Hubs;
+using webapi.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration["ConnectionStrings:MyConnectionString"]));
 builder.Services.AddTransient<IGameService, GameService>();
 builder.Services.AddTransient<IRankingService, RankingService>();
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
@@ -56,6 +58,7 @@ app.UseCors(b => b
 //    }
 
 //});
+app.UseMiddleware<ErrorHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 

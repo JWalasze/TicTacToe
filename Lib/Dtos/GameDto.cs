@@ -10,7 +10,7 @@ public record GameDto
 
     public string Player2Username { get; set; }
 
-    public DateTime StarTime { get; set; }
+    public DateTime StartTime { get; set; }
 
     public DateTime EndTime { get; set; }
 

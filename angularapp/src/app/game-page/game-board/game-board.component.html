@@ -10,47 +10,27 @@
   00:00:05
 </div>
 
-
 <div class="tic-tac-toe-board">
-  <div class="row">
-    <div class="cell">
-      <img src="../assets/crosss.png" />
-    </div>
-    <div class="cell">
-      <img src="../assets/crosss.png" />
-    </div>
-    <div class="cell">
-      <img src="../assets/crosss.png" />
-    </div>
-  </div>
-  <div class="row">
-    <div class="cell">
-      <img src="../assets/cross.png" />
-    </div>
-    <div class="cell">
-      <img src="../assets/cross.png" />
-    </div>
-    <div class="cell">
-      <img src="../assets/cross.png" />
-    </div>
-  </div>
-  <div class="row">
-    <div class="cell">
-      <img src="../assets/crosss.png" />
-    </div>
-    <div class="cell">
-      <img src="../assets/crosss.png" />
-    </div>
-    <div class="cell">
-      <img src="../assets/crosss.png" />
+  <div class="row" *ngFor="let row of board.TicTacToeBoard; let row_i = index">
+    <div class="cell" *ngFor="let cell of row; let cell_i = index" (click)="onMoveClick(row_i, cell_i)" [style.backgroundColor]="fun()">
+      <ng-container *ngIf="whoIsNext == testCircle">
+        <img src="../assets/crosss.png" />
+      </ng-container>
+      <ng-container *ngIf="whoIsNext != testCircle && cell_i > 1">
+        <img src="../assets/cross.png" />
+      </ng-container>
+      <ng-container *ngIf="whoIsNext != testCircle && cell_i < 1">
+        <img src="../assets/crosss.png" />
+      </ng-container>
+      <!--{{cell}}, {{row_i}}, {{cell_i}}-->
     </div>
   </div>
 </div>
 
 <!--<div class="my" [@changeColor]="colorState" (click)="toggleColor()">Click me to change color</div>-->
 
-<button mat-button (click)="test()">Exit game</button>
-<button mat-button (click)="getState()">Exit game</button>
-<button mat-button (click)="endGameSession()"> KURWA END</button>
+<button mat-button (click)="exitGame()">Give up!</button>
+<!--<button mat-button (click)="getState()">Exit game</button>
+<button mat-button (click)="endGameSession()"> KURWA END</button>-->
 
 

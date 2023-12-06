@@ -6,3 +6,15 @@ body {
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.label {
+  font-family: 'Lato', sans-serif;
+  text-align: center;
+  padding: 10px;
+}
+
+.label-data {
+  text-align: center;
+  padding: 0px;
+  width: 10px !important;
+}

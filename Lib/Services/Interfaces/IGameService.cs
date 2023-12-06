@@ -1,7 +1,9 @@
-﻿namespace Lib.Services.Interfaces
+﻿using Lib.Dtos;
+
+namespace Lib.Services.Interfaces
 {
     public interface IGameService
     {
-        public Task StartLookingForGame(string username);
+        public Task SaveGame(GameToBeSavedDto game);
     }
 }

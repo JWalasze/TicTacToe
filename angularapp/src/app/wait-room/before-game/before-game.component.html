@@ -1,35 +1,23 @@
 
-<div class="container">
-  <div class="row">
-    <div class="col">
-      <div class="row rounded-box start-game">
-        <h2>Find your opponent</h2>
-        <div class="horizontal-line"></div>
-        <button (click)="Click()">Start the game</button>
-      </div>
-
-      <div class="row rounded-box my-history">
-        <h2>My history</h2>
-        <div class="horizontal-line"></div>
-        <app-my-history></app-my-history>
-      </div>
-    </div>
-
-    <div class="col">
-      <div class="row rounded-box my-score">
-        <h2>My score</h2>
-        <app-my-score></app-my-score>
-      </div>
-      <div class="row rounded-box ranking">
-        <h2>Global ranking</h2>
-        <div class="horizontal-line"></div>
-        <app-ranking></app-ranking>
-      </div>
-    </div>
+<div class="grid-container">
+  <div class="grid-item">
+    <h2>Find your opponent</h2>
+    <div class="horizontal-line"></div>
+    <button (click)="Click()">Start the game</button>
+  </div>
+  <div class="grid-item">
+    <h2>My score</h2>
+    <div class="horizontal-line"></div>
+    <app-my-score></app-my-score>
+  </div>
+  <div class="grid-item">
+    <h2>Global ranking</h2>
+    <div class="horizontal-line"></div>
+    <app-ranking></app-ranking>
+  </div>
+  <div class="grid-item">
+    <h2>My history</h2>
+    <div class="horizontal-line"></div>
+    <app-my-history></app-my-history>
   </div>
 </div>
-
-
-
-
-

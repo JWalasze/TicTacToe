@@ -18,7 +18,7 @@ public class RankingController : ControllerBase
     [HttpGet("[action]")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetRanking(
-        [FromQuery] int page = 1, 
+        [FromQuery] int page = 1,
         [FromQuery] int size = 10)
     {
         var result = await _rankingService.GetGlobalRanking(page, size);

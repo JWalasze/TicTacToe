@@ -11,4 +11,14 @@ public class CheckingParameters
     {
         return parameters.Any(parameter => parameter == default);
     }
+
+    public static bool CheckCredentials()
+    {
+        throw new NotImplementedException();
+    }
+
+    public static bool CheckGameInfo()
+    {
+        throw new NotImplementedException();
+    }
 }

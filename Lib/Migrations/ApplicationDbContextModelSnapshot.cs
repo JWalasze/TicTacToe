@@ -39,7 +39,7 @@ namespace Lib.Migrations
                     b.Property<int>("Player2Id")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("StarTime")
+                    b.Property<DateTime>("StartTime")
                         .HasColumnType("datetime2");
 
                     b.Property<int?>("WinnerId")

@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Lib.Dtos;
 using Lib.Services.Interfaces;
 
-namespace Lib.Services
+namespace Lib.Services;
+
+public class GameService : IGameService
 {
-    public class GameService : IGameService
+    public Task SaveGame(GameToBeSavedDto game)
     {
-        public Task StartLookingForGame(string username)
-        {
-            throw new NotImplementedException();
-        }
+        throw new NotImplementedException();
     }
 }

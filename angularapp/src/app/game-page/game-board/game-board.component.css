@@ -20,7 +20,7 @@
   background-color: rgba(255, 255, 255, 0.5);
   border: 2px solid #ffffff; /* White border */
   cursor: pointer;
-  transition: background-color 0.3s ease, border 0.3s ease;
+  /*transition: background-color 0.3s ease, border 0.3s ease;*/
 }
 
   .cell:hover {
@@ -28,21 +28,21 @@
     border: 2px solid #e0e0e0; /* Light gray border on hover */
   }
 
-  img {
-      width: 100%;
-      background-color: transparent;
-  }
+img {
+  width: 100%;
+  background-color: transparent;
+}
 
-  .title {
-      color: azure
-  }
+.title {
+  color: azure
+}
 
 .result {
   color: azure
 }
 
 .timer {
-    color: azure;
+  color: azure;
 }
 
 .my {
