@@ -22,9 +22,13 @@ import { Board, NextMove, Piece } from '../models/board';
 })
 export class GameBoardComponent implements OnInit, OnDestroy {
 
-  colorState = 'initial';
+  playerId: number;
+  playerUsername: string;
+  playerPiece: Piece;
 
-  clicked = false;
+  opponentId: number;
+  opponentUsername: string;
+  opponentPiece: Piece;
 
   board: Board = {
     TicTacToeBoard: [[Piece.Empty, Piece.Empty, Piece.Empty],
@@ -32,9 +36,9 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     [Piece.Empty, Piece.Empty, Piece.Empty]]
   };
 
-  whoIsNext: NextMove = NextMove.Circle;
+  currentPieceTurn: NextMove; //Wyjebac w koncu to nextMove i dac cos rozsadnego
 
-  testCircle: NextMove = NextMove.Circle;
+  colorState = 'initial';
 
   constructor(private signalRService: SignalRService) { }
 
@@ -42,7 +46,6 @@ export class GameBoardComponent implements OnInit, OnDestroy {
     this.signalRService.startConnection();
     this.signalRService.observeChangingBoard().subscribe(([board, nextMove]) => {
       console.log("XDDDDDDDDDDDDDDDDDDDDDD");
-      this.whoIsNext = nextMove;
       this.board = board;
     });
     this.signalRService.observeStartOfTheGame().subscribe((groupName) => {
@@ -72,26 +75,30 @@ export class GameBoardComponent implements OnInit, OnDestroy {
   }
 
   onMoveClick(row: number, col: number): void {
-    this.whoIsNext = NextMove.Cross;
-    console.log("KLIKNIĘTE");
-    console.log(row + "," + col);
-    this.board.TicTacToeBoard[row][col] = Piece.Circle;
-    this.signalRService.updateBoard(this.board, this.whoIsNext);
+    if (this.board.TicTacToeBoard[row][col] == Piece.Empty) {
+      this.updateLocalBoard(row, col);
+      this.signalRService.updateBoard(this.board, NextMove.Circle);
+    }
 
-    this.clicked = true;
+    this.board.TicTacToeBoard[row][col] = Piece.Circle;
+    
+  }
+
+  private updateLocalBoard(row: number, col: number): void {
+    this.board.TicTacToeBoard[row][col] = this.playerPiece;
   }
 
   exitGame(): void {
-
+    console.log("body");
   }
 
-  fun() {
-    if (this.clicked) {
-      return 'green';
-    }
-    else {
-      return 'blue';
-    }
+  fun(row: number, col: number) {
+    //if (1) {
+    //  return 'green';
+    //}
+    //else {
+    //  return 'blue';
+    //}
   }
 
   private getCurrentConnectionState(): void {

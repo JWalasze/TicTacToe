@@ -19,6 +19,12 @@ public static class GameLogic
         return whoMadeMove is NextMove.Circle ? NextMove.Circle : NextMove.Cross;
     }
 
+    public static (Piece Piece1, Piece Piece2) DrawRandomPiece()
+    {
+        var random = new Random();
+        return random.Next(0, 1) == 0 ? (Piece.Circle, Piece.Cross) : (Piece.Cross, Piece.Circle);
+    }
+
     public static NextMove? SearchForTheWInner(Board board)
     {
         if (board.CheckIfCircleWon())

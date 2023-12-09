@@ -19,6 +19,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddTransient<IGameService, GameService>();
 builder.Services.AddTransient<IRankingService, RankingService>();
 builder.Services.AddHttpClient();
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 var app = builder.Build();
 

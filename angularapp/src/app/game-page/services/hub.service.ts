@@ -17,12 +17,6 @@ export class SignalRService {
     this.hubConnection = new HubConnectionBuilder()
       .withUrl(environment.hubUrl)
       .build();
-
-    this.hubConnection.on("GameStart", (message: string, groupName: string) => {
-      console.log(message);
-      console.log("Group name: " + groupName);
-      //I moze tu invoke async żeby
-    });
   }
 
   sendPlayerInfo() {

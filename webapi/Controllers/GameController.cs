@@ -1,4 +1,5 @@
-﻿using Lib.Dtos;
+﻿using AutoMapper;
+using Lib.Dtos;
 using Lib.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -12,11 +13,13 @@ public class GameController : ControllerBase
 {
     private readonly IHubContext<GameHub> _hubContext;
     private readonly IGameService _gameService;
+    private readonly IMapper _mapper;
 
-    public GameController(IHubContext<GameHub> hubContext, IGameService gameService)
+    public GameController(IHubContext<GameHub> hubContext, IGameService gameService, IMapper mapper)
     {
         _hubContext = hubContext;
         _gameService = gameService;
+        _mapper = mapper;
     }
 
 

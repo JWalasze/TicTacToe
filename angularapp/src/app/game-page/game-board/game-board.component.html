@@ -12,14 +12,14 @@
 
 <div class="tic-tac-toe-board">
   <div class="row" *ngFor="let row of board.TicTacToeBoard; let row_i = index">
-    <div class="cell" *ngFor="let cell of row; let cell_i = index" (click)="onMoveClick(row_i, cell_i)" [style.backgroundColor]="fun()">
-      <ng-container *ngIf="whoIsNext == testCircle">
+    <div class="cell" *ngFor="let cell of row; let cell_i = index" (click)="onMoveClick(row_i, cell_i)" [style.backgroundColor]="fun(row_i, cell_i)">
+      <ng-container>
         <img src="../assets/crosss.png" />
       </ng-container>
-      <ng-container *ngIf="whoIsNext != testCircle && cell_i > 1">
+      <ng-container>
         <img src="../assets/cross.png" />
       </ng-container>
-      <ng-container *ngIf="whoIsNext != testCircle && cell_i < 1">
+      <ng-container>
         <img src="../assets/crosss.png" />
       </ng-container>
       <!--{{cell}}, {{row_i}}, {{cell_i}}-->
