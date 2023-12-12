@@ -1,24 +1,23 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { RankingService } from '../services/ranking.service';
 import { PlayerScore } from '../models/player-score';
 
 @Component({
   selector: 'app-my-score',
-  templateUrl: './my-score.component.html',
-  styleUrls: ['./my-score.component.css']
+  templateUrl: './my-score.component.html'
 })
 export class MyScoreComponent implements OnInit {
 
-  playerId!: number;
+  @Input()
+  playerId: number;
 
-  score$!: PlayerScore;
+  score$: PlayerScore;
 
   constructor(private rankingService: RankingService) { }
 
   ngOnInit(): void {
-    this.rankingService.getPlayerScore().subscribe(data => {
+    this.rankingService.getPlayerScore(this.playerId).subscribe(data => {
       this.score$ = data;
-      console.log(this.score$);
     });
   } 
 }

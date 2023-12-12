@@ -12,17 +12,16 @@
 
 <div class="tic-tac-toe-board">
   <div class="row" *ngFor="let row of board.TicTacToeBoard; let row_i = index">
-    <div class="cell" *ngFor="let cell of row; let cell_i = index" (click)="onMoveClick(row_i, cell_i)" [style.backgroundColor]="fun(row_i, cell_i)">
-      <ng-container>
-        <img src="../assets/crosss.png" />
+    <div class="cell" *ngFor="let cell of row; let cell_i = index" (click)="onMoveClick(row_i, cell_i)" [style.background-color]="fun(row_i, cell_i)">
+
+      <ng-container *ngIf="board.TicTacToeBoard[row_i][cell_i] == tiles.circle">
+        <img src="../../../assets/circle.png" alt=""/>
       </ng-container>
-      <ng-container>
-        <img src="../assets/cross.png" />
+
+      <ng-container *ngIf="board.TicTacToeBoard[row_i][cell_i] == tiles.cross">
+        <img src="../../../assets/cross.png" alt=""/>
       </ng-container>
-      <ng-container>
-        <img src="../assets/crosss.png" />
-      </ng-container>
-      <!--{{cell}}, {{row_i}}, {{cell_i}}-->
+
     </div>
   </div>
 </div>
@@ -31,6 +30,6 @@
 
 <button mat-button (click)="exitGame()">Give up!</button>
 <!--<button mat-button (click)="getState()">Exit game</button>
-<button mat-button (click)="endGameSession()"> KURWA END</button>-->
+<button mat-button (click)="endGameSession()"> END</button>-->
 
 

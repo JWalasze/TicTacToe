@@ -1,18 +1,15 @@
 <ng-container *ngIf="score$ as s">
-  <div class="e">
-    <div class="row">
-      <div class="col label">Username</div>
-      <div class="col label">Won games</div>
-      <div class="col label">Lost games</div>
-      <div class="col label">Draw games</div>
-    </div>
-
-    <div class="row d">
-      <div class="col label-data">{{s.username}}</div>
-      <div class="col label-data">{{s.wonGames}}</div>
-      <div class="col label-data">{{s.lostGames}}</div>
-      <div class="col label-data">{{s.drawGames}}</div>
-    </div>
-
+  
+  <div class="data-container-score">
+    <div class="label">Won games</div>
+    <div class="label">Lost games</div>
+    <div class="label">Draw games</div>
   </div>
+
+  <div class="data-container-score">
+    <div class="data-cell">{{s.wonGames}}</div>
+    <div class="data-cell">{{s.lostGames}}</div>
+    <div class="data-cell">{{s.drawGames}}</div>
+  </div>
+
 </ng-container>

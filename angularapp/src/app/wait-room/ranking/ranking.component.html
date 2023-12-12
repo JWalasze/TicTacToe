@@ -1,15 +1,18 @@
 <ng-container *ngIf="ranking$">
-  <div>
-    <div class="row">
-      <div class="col label">Position</div>
-      <div class="col label">Player</div>
-      <div class="col label">Score</div>
-    </div>
-    <div *ngFor="let r of ranking$; let i = index" class="row d">
-      <div class="col label-data">{{i+1}}</div>
-      <div class="col label-data">{{r.username}}</div>
-      <div class="col label-data">{{r.wonGames}}</div>
-    </div>
+
+  <div class="data-container-ranking">
+    <div class="label">Position</div>
+    <div class="label">Player</div>
+    <div class="label">Score</div>
   </div>
+
+  <div *ngFor="let r of ranking$; let i = index" class="data-container-ranking">
+    <div class="data-cell">{{i+1}}</div>
+    <div class="data-cell">{{r.username}}</div>
+    <div class="data-cell">{{r.wonGames}}</div>
+  </div>
+
+  <div class="whitespace"></div>
+
 </ng-container>
 

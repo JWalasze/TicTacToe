@@ -7,6 +7,5 @@ namespace Lib.Enums;
 public enum Piece
 {
     Cross,
-    Circle,
-    Empty
+    Circle
 }

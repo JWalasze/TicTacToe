@@ -1,16 +1,19 @@
 <ng-container *ngIf="history$">
-  <div>
-    <div class="row">
-      <div class="col label">Position</div>
-      <div class="col label">Opponent</div>
-      <div class="col label">Duration</div>
-      <div class="col label">Result</div>
-    </div>
-    <div *ngFor="let h of history$; let i = index" class="row d">
-      <div class="col label-data">{{i+1}}</div>
-      <div class="col label-data">{{h.player2Username}}</div>
-      <div class="col label-data">{{h.duration}}</div>
-      <div class="col label-data">{{h.isWon}}</div>
-    </div>
+
+  <div class="data-container-history">
+    <div class="label">Position</div>
+    <div class="label">Opponent</div>
+    <div class="label">Duration</div>
+    <div class="label">Result</div>
   </div>
+
+  <div *ngFor="let h of history$; let i = index" class="data-container-history">
+    <div class="data-cell">{{i+1}}</div>
+    <div class="data-cell">{{h.player2Username}}</div>
+    <div class="data-cell">{{h.duration}}</div>
+    <div class="data-cell">{{h.status}}</div>
+  </div>
+
+  <div class="whitespace"></div>
+
 </ng-container>

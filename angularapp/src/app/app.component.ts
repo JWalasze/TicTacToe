@@ -8,18 +8,8 @@ import { Router } from '@angular/router';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  public forecasts?: WeatherForecast[];
 
-  constructor(http: HttpClient, private router: Router) {
+  constructor(private router: Router) {
     this.router.navigate(["auth"]);
   }
-
-  title = 'angularapp';
-}
-
-interface WeatherForecast {
-  date: string;
-  temperatureC: number;
-  temperatureF: number;
-  summary: string;
 }

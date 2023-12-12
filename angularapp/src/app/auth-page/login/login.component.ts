@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
 import { Router } from '@angular/router';
 
 
@@ -11,9 +10,12 @@ import { Router } from '@angular/router';
 })
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
-  constructor(private fb: FormBuilder, private router: Router) { }
 
- 
+  username = 'Rachet1234';
+
+  playerId = 1;
+
+  constructor(private fb: FormBuilder, private router: Router) { }
 
   ngOnInit(): void {
     console.log('Login form submitted:');
@@ -24,9 +26,8 @@ export class LoginComponent implements OnInit {
   }
 
   onSubmit() {
-    // Handle login logic here
     console.log("here I am")
-    this.router.navigate(["/wait_room"]);
+    this.router.navigate(["/wait_room"], { state: { playerId: this.playerId, username: this.username } });
   }
 
   createProfile() {

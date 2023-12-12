@@ -1,14 +1,14 @@
 export interface Board {
-  TicTacToeBoard: Piece[][];
+  TicTacToeBoard: Tile[][];
 }
 
-export enum Piece {
+export enum Tile {
   Cross = 'CROSS',
   Circle = 'CIRCLE',
   Empty = 'EMPTY'
 }
 
-export enum NextMove {
+export enum Piece {
   Cross = 'CROSS',
   Circle = 'CIRCLE'
 }

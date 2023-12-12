@@ -1,37 +1,63 @@
-import { Component, OnInit } from '@angular/core';
-import { HistoryItem } from '../models/history-item';
+import { Component, Input, OnInit } from '@angular/core';
 import { RankingService } from '../services/ranking.service';
 import { HistoryItemDto } from '../models/history-item-dto';
 import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-my-history',
-  templateUrl: './my-history.component.html',
-  styleUrls: ['./my-history.component.css']
+  templateUrl: './my-history.component.html'
 })
 export class MyHistoryComponent implements OnInit {
-  playerId!: string;
 
-  history$: HistoryItemDto[] = [];
+  @Input()
+  playerId: number;
+
+  @Input()
+  username: string;
+
+  @Input()
+  page: number;
+
+  @Input()
+  size: number;
+
+  history$: HistoryItemDto[];
+
   constructor(private rankingService: RankingService, private datePipe: DatePipe) { }
 
   ngOnInit(): void {
-    this.rankingService.getHistory().subscribe(data => {
-      //console.log(data[0].endTime.getTime() - data[0].startTime.getTime());
+    this.rankingService.getHistory(this.playerId, this.page, this.size).subscribe(data => {
+      this.history$ = [];
       data.map(item => {
-        //console.log(new Date(item.endTime).getTime());
-        //console.log(item.startTime);
-        //console.log(new Date(item.startTime).getTime());
         this.history$.push({
           id: item.id,
           player1Username: item.player1Username,
           player2Username: item.player2Username,
-          //duration: new Date(),
-          duration: this.datePipe.transform(new Date(item.endTime).getTime() - new Date(item.startTime).getTime(), 'hh:mm:ss'),
-          isWon: this.playerId == item.winnerUsername
+          duration: this.countDuration(item.endTime, item.startTime),
+          status: this.selectGameStatus(item.winnerUsername)
         });
       });
-      console.log(data);
     });
+  }
+
+  private countDuration(endTime: Date, startTime: Date): string {
+    const duration = this.datePipe.transform(new Date(endTime).getTime() - new Date(startTime).getTime(), 'hh:mm:ss');
+    if (duration == null) {
+      return '-';
+    }
+
+    return duration;
+  }
+
+  private selectGameStatus(winnerUsername: string | undefined): string {
+    if (winnerUsername == null) {
+      return 'Draw';
+    }
+
+    if (winnerUsername == this.username) {
+      return 'Won';
+    }
+
+    return 'Lost';
   }
 }

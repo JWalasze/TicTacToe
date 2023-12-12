@@ -11,30 +11,30 @@ public static class GameLogic
     {
         var groupName = Guid.NewGuid().ToByteArray();
         var encodedGroupName = WebEncoders.Base64UrlEncode(groupName);
-        return "Game:" + encodedGroupName;
+        return encodedGroupName;
     }
 
-    public static NextMove WhoWillBeNext(NextMove whoMadeMove)
+    public static Piece WhoWillBeNext(Piece whoMadeMove)
     {
-        return whoMadeMove is NextMove.Circle ? NextMove.Circle : NextMove.Cross;
+        return whoMadeMove is Piece.Circle ? Piece.Cross : Piece.Circle;
     }
 
     public static (Piece Piece1, Piece Piece2) DrawRandomPiece()
     {
-        var random = new Random();
-        return random.Next(0, 1) == 0 ? (Piece.Circle, Piece.Cross) : (Piece.Cross, Piece.Circle);
+        var randomNumber = RandomGenerator.Draw(0, 1);
+        return randomNumber == 0 ? (Piece.Circle, Piece.Cross) : (Piece.Cross, Piece.Circle);
     }
 
-    public static NextMove? SearchForTheWInner(Board board)
+    public static Piece? SearchForTheWInner(Board board)
     {
         if (board.CheckIfCircleWon())
         {
-            return NextMove.Circle;
+            return Piece.Circle;
         }
 
         if (board.CheckIfCrossWon())
         {
-            return NextMove.Cross;
+            return Piece.Cross;
         }
 
         return null;
@@ -45,8 +45,8 @@ public static class GameLogic
         return JsonConvert.DeserializeObject<Board>(board);
     }
 
-    public static NextMove? DeserializeNextMove(string nextMove)
+    public static Piece? DeserializeWhoMadeMove(string whoMadeMove)
     {
-        return JsonConvert.DeserializeObject<NextMove>(nextMove);
+        return JsonConvert.DeserializeObject<Piece>(whoMadeMove);
     }
 }

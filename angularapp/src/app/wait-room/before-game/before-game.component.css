@@ -1,49 +1,38 @@
 
-container {
-  /*width: 50vh;*/
-}
-
-.col {
-  /*height: 40vh;*/
-}
-
-row {
-
-}
-
 .horizontal-line {
-  border-top: 1px solid #000000; /* Black color */
-  margin: 20px 0 0 0; /* Adjust margin as needed */
+  border-top: 2px solid #4caf50;
+  margin: 20px 0 0 0;
 }
 
 h2 {
   font-family: 'Raleway', sans-serif;
   font-size: 28px;
+  padding-top: 20px;
+}
+
+.main-title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 45px;
+  font-family: 'Caveat', cursive;
+  font-size: 75px;
+  color: ghostwhite;
+}
+
+.sticky-title {
+  background-color: white;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .rounded-box {
-  background-color: #ffffff; /* White background color */
-  border: 1px solid #ccc; /* Border color */
-  border-radius: 8px; /* Border radius for rounded corners */
-  padding: 20px; /* Adjust padding as needed */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle box shadow */
-}
-
-.my-history {
-  margin: 20px 0 0 0;
-  /*height: 40vh;*/
-}
-
-.my-score {
-}
-
-.ranking {
-  /* height: 100%;*/
-  margin-top: 20px;
-}
-
-.start-game {
-  margin: 0;
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 button {
@@ -56,9 +45,7 @@ button {
   margin-bottom: 12px;
   margin-top: 25px;
   width: 100%;
-
 }
-
 
 .grid-container {
   display: grid;
@@ -71,34 +58,30 @@ button {
 }
 
 .grid-item {
-  /* border: 1px solid #000;
-  padding: 10px;
-  background-color: aliceblue;*/
-  background-color: #ffffff; /* White background color */
-  border: 1px solid #ccc; /* Border color */
-  border-radius: 8px; /* Border radius for rounded corners */
-  padding: 20px 20px 0 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle box shadow */
+  background-color: #ffffff; 
+  border: 1px solid #ccc; 
+  border-radius: 8px; 
+  padding: 0 20px 0 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow-x: auto;
   overflow-y: auto;
 }
 
-@media (max-width: 1000px) {
-  .grid-container {
-    grid-template-columns: auto; /* Set to a single column for smaller screens */
-  }
-}
-
 .grid-item::-webkit-scrollbar {
-  width: 10px; /* Width of the scrollbar */
+    width: 10px;
 }
 
 .grid-item::-webkit-scrollbar-thumb {
-  background-color: #888; /* Color of the scrollbar thumb */
-  border-radius: 6px; /* Round the corners of the thumb */
+    background-color: #888; 
+    border-radius: 6px;
 }
 
 .grid-item::-webkit-scrollbar-track {
-  background-color: #eee; /* Color of the scrollbar track */
-  border-radius: 6px; /* Round the corners of the track */
+    background-color: #eee;
+    border-radius: 6px;
 }
+
+/*@media (max-width: 1000px) {
+  .grid-container {
+    grid-template-columns: auto;
+}*/

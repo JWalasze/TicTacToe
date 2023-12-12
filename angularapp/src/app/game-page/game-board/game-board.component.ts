@@ -1,7 +1,9 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { SignalRService } from '../services/hub.service';
-import { Board, NextMove, Piece } from '../models/board';
+import { Board, Piece, Tile } from '../models/board';
+import { map } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
 
 
 @Component({
@@ -31,18 +33,51 @@ export class GameBoardComponent implements OnInit, OnDestroy {
   opponentPiece: Piece;
 
   board: Board = {
-    TicTacToeBoard: [[Piece.Empty, Piece.Empty, Piece.Empty],
-    [Piece.Empty, Piece.Empty, Piece.Empty],
-    [Piece.Empty, Piece.Empty, Piece.Empty]]
+    TicTacToeBoard: [[Tile.Empty, Tile.Empty, Tile.Empty],
+    [Tile.Empty, Tile.Empty, Tile.Empty],
+    [Tile.Empty, Tile.Empty, Tile.Empty]]
   };
 
-  currentPieceTurn: NextMove; //Wyjebac w koncu to nextMove i dac cos rozsadnego
+  currentPieceTurn: Piece = Piece.Circle;
+
+  tiles = {
+    circle: Tile.Circle,
+    cross: Tile.Cross,
+    empty: Tile.Empty
+  };
 
   colorState = 'initial';
 
-  constructor(private signalRService: SignalRService) { }
+  @HostListener('mouseenter')
+  mouseenter() {
+    if (this.currentPieceTurn == Piece.Circle) {
+      console.log("OMG It's a Mouse!!!");
+    }
+  }
+
+  @HostListener('mouseover')
+  mouseover() {
+    if (this.currentPieceTurn == Piece.Circle) {
+      console.log("OMG It's still here!!!");
+    }
+  }
+
+  @HostListener('mouseout')
+  mouseout() {
+    if (this.currentPieceTurn == Piece.Circle) {
+      console.log('Phew thank god it left!')
+    }
+  }
+
+  constructor(private signalRService: SignalRService, public activatedRoute: ActivatedRoute) { }
 
   ngOnInit(): void {
+    
+    this.activatedRoute.paramMap
+      .pipe(map(() => window.history.state)).subscribe(data => {
+        console.log(data);
+      });
+    
     this.signalRService.startConnection();
     this.signalRService.observeChangingBoard().subscribe(([board, nextMove]) => {
       console.log("XDDDDDDDDDDDDDDDDDDDDDD");
@@ -75,17 +110,21 @@ export class GameBoardComponent implements OnInit, OnDestroy {
   }
 
   onMoveClick(row: number, col: number): void {
-    if (this.board.TicTacToeBoard[row][col] == Piece.Empty) {
+    if (this.board.TicTacToeBoard[row][col] == Tile.Empty) {
       this.updateLocalBoard(row, col);
-      this.signalRService.updateBoard(this.board, NextMove.Circle);
+      this.signalRService.updateBoard(this.board, Piece.Circle);
+      this.currentPieceTurn = Piece.Cross;
     }
-
-    this.board.TicTacToeBoard[row][col] = Piece.Circle;
-    
   }
 
   private updateLocalBoard(row: number, col: number): void {
-    this.board.TicTacToeBoard[row][col] = this.playerPiece;
+    if (this.playerPiece == Piece.Circle) {
+      this.board.TicTacToeBoard[row][col] = Tile.Circle;
+    }
+    else {
+      this.board.TicTacToeBoard[row][col] = Tile.Cross;
+    }
+    console.log(this.board.TicTacToeBoard[row][col]);
   }
 
   exitGame(): void {
@@ -93,12 +132,11 @@ export class GameBoardComponent implements OnInit, OnDestroy {
   }
 
   fun(row: number, col: number) {
-    //if (1) {
-    //  return 'green';
-    //}
-    //else {
-    //  return 'blue';
-    //}
+    if (this.board.TicTacToeBoard[row][col] != Tile.Empty) {
+      return '#f2f2f2';
+    }
+
+    return '';
   }
 
   private getCurrentConnectionState(): void {

@@ -1,10 +1,10 @@
 
 import { Injectable } from '@angular/core';
 import { HubConnection, HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
-import { Board, NextMove } from '../models/board';
+import { Board, Piece } from '../models/board';
 import { environment } from '../../../environment';
 import { Observable } from 'rxjs';
-import { group } from '@angular/animations';
+
 
 @Injectable({
   providedIn: 'root',
@@ -41,13 +41,13 @@ export class SignalRService {
     });
   }
 
-  observeChangingBoard(): Observable<[Board, NextMove]> {
-    return new Observable<[Board, NextMove]>((observer) => {
+  observeChangingBoard(): Observable<[Board, Piece]> {
+    return new Observable<[Board, Piece]>((observer) => {
       this.hubConnection.on("MadeMove", (board: string, nextMove: string, message: string) => {
         const boardObj = JSON.parse(board) as Board;
-        const nextMoveObj = JSON.parse(nextMove) as NextMove;
+        const nextMoveObj = JSON.parse(nextMove) as Piece;
         console.log(JSON.parse(board) as Board);
-        console.log(JSON.parse(nextMove) as NextMove);
+        console.log(JSON.parse(nextMove) as Piece);
         console.log(message);
         //console.log("WHo has won???" + whoHasWOn);
         observer.next([boardObj, nextMoveObj]);
@@ -85,7 +85,7 @@ export class SignalRService {
     //this.updateBoard();
   }
 
-  updateBoard(board: Board, whoIsNext: NextMove) {
+  updateBoard(board: Board, whoIsNext: Piece) {
     const boardStr = JSON.stringify(board);
     const whoIsNextStr = JSON.stringify(whoIsNext);
     this.hubConnection.invoke("UpdateBoardAfterMove", boardStr, whoIsNextStr, "tu pozniej group name").then(() => {

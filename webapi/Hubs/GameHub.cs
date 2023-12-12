@@ -10,6 +10,7 @@ namespace webapi.Hubs;
 public class GameHub : Hub
 {
     private static readonly ICollection<string> WaitingPlayers = new HashSet<string>();
+    private static readonly IDictionary<string, bool> ReadyPlayers = new Dictionary<string, bool>();
 
     public async Task UpdateBoardAfterMove(string updatedBoard, string whoMadeMove, string groupName,
         ILogger<GameHub> logger, IHttpClientFactory httpClientFactory)
@@ -38,7 +39,7 @@ public class GameHub : Hub
         //Niepoprawny group z klienta dlatego nie bylo wiadomosci
         //Trzeba sprawdzac czy sa w grze napewno obydwoje...
 
-        var deserializedNextMove = GameLogic.DeserializeNextMove(whoMadeMove) ?? throw new JsonException("Deserialization for NEXT_MOVE can't be performed!");
+        var deserializedNextMove = GameLogic.DeserializeWhoMadeMove(whoMadeMove) ?? throw new JsonException("Deserialization for NEXT_MOVE can't be performed!");
         var whoIsNext = GameLogic.WhoWillBeNext(deserializedNextMove);
 
         //Pozniej na froncie dać że jak jest info od tego co zrobil ruch to nie robic zmiany
@@ -46,20 +47,53 @@ public class GameHub : Hub
         logger.LogInformation("Method 'UpdateBoardAfterMove' has been invoked.");
     }
 
-    public async Task SendPlayerDataToTheOpponent(string opponentConnectionId, DataForOpponent opponentData)
+    public async Task SendPlayerDataToOpponent(string opponentConnectionId, DataForOpponent opponentData)
     {
         await Clients.Client(opponentConnectionId).SendAsync("ReceiveOpponentData", opponentData);
     }
 
-    public async Task StartTheGame()
+    public async Task InformOpponentYouAreReady(string opponentConnectionId , string groupName, ILogger<GameHub> logger)
     {
-        //await Client
+        bool readiness;
+        var playerConnectionId = Context.ConnectionId;
+
+        lock (ReadyPlayers)
+        {
+            var success = ReadyPlayers.TryGetValue(playerConnectionId, out _);
+
+            if (!success)
+            {
+                logger.LogError("Error: Invalid group name or player does not exist!");
+                return;
+            } 
+            
+            ReadyPlayers[playerConnectionId] = true;
+            var isOpponentFound = ReadyPlayers.ContainsKey(opponentConnectionId);
+
+            if (!isOpponentFound)
+            {
+                logger.LogError("Error: Invalid group name or player does not exist!");
+                return;
+            }
+
+            ReadyPlayers.TryGetValue(opponentConnectionId, out readiness);
+        }
+
+        if (readiness)
+        {
+            await Clients.Group(groupName).SendAsync("StartGame", 
+                $"In game with identifier: {groupName} we have: {playerConnectionId} and {opponentConnectionId}");
+            lock (ReadyPlayers)
+            {
+                ReadyPlayers.Remove(playerConnectionId);
+                ReadyPlayers.Remove(opponentConnectionId);
+            }
+        }
     }
 
     public override async Task OnConnectedAsync()
     {
         var connectionId = Context.ConnectionId;
-        var randomGenerator = new Random();
 
         string? randomPlayerConnectionId = null;
         var shouldGameStart = false;
@@ -68,7 +102,7 @@ public class GameHub : Hub
         {
             if (WaitingPlayers.Count is not 0)
             {
-                var randomPlayer = randomGenerator.Next(0, WaitingPlayers.Count - 1);
+                var randomPlayer = RandomGenerator.Draw(0, WaitingPlayers.Count - 1);
                 randomPlayerConnectionId = WaitingPlayers.ToList()[randomPlayer];
                 shouldGameStart = true;
 
@@ -87,26 +121,23 @@ public class GameHub : Hub
             await Groups.AddToGroupAsync(connectionId, groupName);
             await Groups.AddToGroupAsync(randomPlayerConnectionId, groupName);
 
-            //Invoke methode to po prostu zapisze juz na poczatku do bazy!!! juz zalazek
-            //ALbo czekaj...InvokeAsync żeby dostać informacje o grze????
-            //var player1Info = await Clients.Client(connectionId).InvokeAsync<string>("GetPlayerInfo", default);
-            //var player2Info = await Clients.Client(randomPlayerConnectionId).InvokeAsync<string>("GetPlayerInfo", default);
-            //Console.WriteLine(player1Info);
-            //Console.WriteLine(player2Info);
-            //i pozniej zapisać to co bedzie zwrocone...
+            lock (ReadyPlayers)
+            {
+                ReadyPlayers.Add(connectionId,false);
+                ReadyPlayers.Add(randomPlayerConnectionId, false);
+            }
 
-            //Wysylamy zwykly sendAsync i wtedy odbieramy na froncie a oni wysylają info o graczach...
-            //jeszcze losowanie kto kolko a kto krzyzyk...
-            //osobne calle zeby jeden byl kolko a jeden krzyzyk
             var (piece1, piece2) = GameLogic.DrawRandomPiece();
-            await Clients.Client(connectionId).SendAsync("DrawPiece", piece1);
-            await Clients.Client(randomPlayerConnectionId).SendAsync("DrawPiece", piece2);
 
-            await Clients.Group(groupName).S
+            await Clients.Client(connectionId).SendAsync("AssignPiece", piece1);
+            await Clients.Client(randomPlayerConnectionId).SendAsync("AssignPiece", piece2);
+
+            await Clients.Client(connectionId).SendAsync("WhoIsMyOpponent", randomPlayerConnectionId, groupName);
+            await Clients.Client(randomPlayerConnectionId).SendAsync("WhoIsMyOpponent", connectionId, groupName);
+
+            //await Clients.Group(groupName).S
             //A i jak sie robią te rzeczy to wtedy dac jakis napis ze Game is being prepared.
-            await Clients.Group(groupName).SendAsync("StartGame", $"Group {groupName} has been created! " +
-                                                                  $"In game we have: {connectionId} and {randomPlayerConnectionId}",
-                groupName);
+            //Albo {WAITNIG FOR PLAYERS TO BE READY.} w jakims popupie
         }
 
         await base.OnConnectedAsync();
@@ -116,11 +147,16 @@ public class GameHub : Hub
     {
         lock (WaitingPlayers)
         {
-            var connectionsToDelete = WaitingPlayers.FirstOrDefault(connectionId => connectionId == Context.ConnectionId);
-            if (connectionsToDelete is not null)
+            var connectionToDelete = WaitingPlayers.FirstOrDefault(connectionId => connectionId == Context.ConnectionId);
+            if (connectionToDelete is not null)
             {
-                WaitingPlayers.Remove(connectionsToDelete);
+                WaitingPlayers.Remove(connectionToDelete);
             }
+        }
+
+        lock (ReadyPlayers)
+        {
+            ReadyPlayers.Remove(Context.ConnectionId);
         }
 
         await base.OnDisconnectedAsync(exception);

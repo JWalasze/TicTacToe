@@ -12,15 +12,21 @@ export class RankingService {
 
   constructor(private http: HttpClient) { }
 
-  getHistory(): Observable<HistoryItem[]> {
-    return this.http.get<HistoryItem[]>(environment.apiUrl + "/Ranking/GetPlayerHistory?playerId=1&page=1&size=10");
+  getHistory(playerId: number, page: number, size: number): Observable<HistoryItem[]> {
+    return this.http.get<HistoryItem[]>(environment.apiUrl + environment.apiEndpoints.playerHistory
+      + "?playerId=" + playerId
+      + "&page=" + page
+      + "&size=" + size);
   }
 
-  getGlobalRanking(): Observable<PlayerScore[]> {
-    return this.http.get<PlayerScore[]>(environment.apiUrl + "/Ranking/GetRanking?page=1&size=10");
+  getGlobalRanking(page: number, size: number): Observable<PlayerScore[]> {
+    return this.http.get<PlayerScore[]>(environment.apiUrl + environment.apiEndpoints.globalRanking
+      + "?page=" + page
+      + "&size=" + size);
   }
 
-  getPlayerScore(): Observable<PlayerScore> {
-    return this.http.get<PlayerScore>(environment.apiUrl + "/Ranking/GetPlayerScore?playerId=1");
+  getPlayerScore(playerId: number): Observable<PlayerScore> {
+    return this.http.get<PlayerScore>(environment.apiUrl + environment.apiEndpoints.playerScore
+      + "?playerId=" + playerId);
   }
 }

@@ -4,34 +4,34 @@ namespace Lib.TicTacToeGame;
 
 public class Board
 {
-    public Piece[][] TicTacToeBoard;
+    public Tile[][] TicTacToeBoard;
 
     public Board()
     {
-        TicTacToeBoard = new Piece[3][];
+        TicTacToeBoard = new Tile[3][];
 
         for (var i = 0; i < 3; i++)
         {
-            TicTacToeBoard[i] = new[] { Piece.Empty, Piece.Empty, Piece.Empty };
+            TicTacToeBoard[i] = new[] { Tile.Empty, Tile.Empty, Tile.Empty };
         }
     }
 
     public void SetEmptyBoard()
     {
-        TicTacToeBoard = new Piece[3][];
+        TicTacToeBoard = new Tile[3][];
 
         for (var i = 0; i < 3; i++)
         {
-            TicTacToeBoard[i] = new[] { Piece.Empty, Piece.Empty, Piece.Empty };
+            TicTacToeBoard[i] = new[] { Tile.Empty, Tile.Empty, Tile.Empty };
         }
     }
 
-    public void AddPiece(int row, int column, Piece piece)
+    public void AddPiece(int row, int column, Piece tile)
     {
-        TicTacToeBoard[row][column] = piece;
+        TicTacToeBoard[row][column] = (Tile)tile;
     }
 
-    public Piece GetPiece(int row, int column)
+    public Tile GetTile(int row, int column)
     {
         return TicTacToeBoard[row][column];
     }
@@ -59,7 +59,7 @@ public class Board
         {
             for (var j = 0; j < TicTacToeBoard.Length; j++)
             {
-                if (GetPiece(i, j) == piece)
+                if (GetTile(i, j) == (Tile)piece)
                 {
                     ++counter;
                 }
@@ -84,7 +84,7 @@ public class Board
         {
             for (var j = 0; j < TicTacToeBoard.Length; j++)
             {
-                if (GetPiece(j, i) == piece)
+                if (GetTile(j, i) == (Tile)piece)
                 {
                     ++counter;
                 }
@@ -107,7 +107,7 @@ public class Board
 
         for (var i = 0; i < TicTacToeBoard.Length; i++)
         {
-            if (GetPiece(i, i) == piece)
+            if (GetTile(i, i) == (Tile)piece)
             {
                 ++counter;
             }
@@ -122,7 +122,7 @@ public class Board
 
         for (var i = 0; i < TicTacToeBoard.Length; i++)
         {
-            if (GetPiece(TicTacToeBoard.Length - 1 - i, i) == piece)
+            if (GetTile(TicTacToeBoard.Length - 1 - i, i) == (Tile)piece)
             {
                 ++counter;
             }
