@@ -21,18 +21,23 @@ public static class GameLogic
 
     public static (Piece Piece1, Piece Piece2) DrawRandomPiece()
     {
-        var randomNumber = RandomGenerator.Draw(0, 1);
+        var randomNumber = RandomGenerator.Draw(0, 2);
         return randomNumber == 0 ? (Piece.Circle, Piece.Cross) : (Piece.Cross, Piece.Circle);
     }
 
-    public static Piece? SearchForTheWInner(Board board)
+    public static bool CheckIfBoardIsFull(TicTacToe ticTacToe)
     {
-        if (board.CheckIfCircleWon())
+        return ticTacToe.CheckIfBoardIsFull();
+    }
+
+    public static Piece? SearchForTheWInner(TicTacToe ticTacToe)
+    {
+        if (ticTacToe.CheckIfCircleWon())
         {
             return Piece.Circle;
         }
 
-        if (board.CheckIfCrossWon())
+        if (ticTacToe.CheckIfCrossWon())
         {
             return Piece.Cross;
         }
@@ -40,9 +45,9 @@ public static class GameLogic
         return null;
     }
 
-    public static Board? DeserializeBoard(string board)
+    public static TicTacToe? DeserializeBoard(string board)
     {
-        return JsonConvert.DeserializeObject<Board>(board);
+        return JsonConvert.DeserializeObject<TicTacToe>(board);
     }
 
     public static Piece? DeserializeWhoMadeMove(string whoMadeMove)
