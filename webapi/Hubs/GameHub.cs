@@ -1,8 +1,8 @@
 ﻿using System.Net.Mime;
 using System.Text;
 using Lib.Dtos;
+using Lib.Enums;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using webapi.Hubs.Static;
 
@@ -13,11 +13,11 @@ public class GameHub : Hub
     private static readonly ICollection<string> WaitingPlayers = new HashSet<string>();
     private static readonly IDictionary<string, bool> ReadyPlayers = new Dictionary<string, bool>();
 
-    public async Task UpdateBoardAfterMove(string updatedBoard, string whoMadeMove, string groupName,
+    public async Task UpdateBoardAfterMove(string updatedBoard, string whoMadeMove, string groupName, string opponentConnectionId,
         ILogger<GameHub> logger, IHttpClientFactory httpClientFactory)
     {
         var deserializedBoard = GameLogic.DeserializeBoard(updatedBoard) ?? throw new JsonException("Deserialization for BOARD can't be performed!");
-        var whoHasWon = GameLogic.SearchForTheWInner(deserializedBoard);//TU DAC GAME RESULT JAKO TO CO ZWRACA
+        var whoHasWon = GameLogic.SearchForTheWInner(deserializedBoard);
         
         if (whoHasWon is not null)
         {
@@ -31,12 +31,16 @@ public class GameHub : Hub
                 JsonConvert.SerializeObject(gameToBeSaved),
                 Encoding.UTF8,
                 MediaTypeNames.Application.Json);
-
-            //var responseMessage = await httpClient.PostAsync("/api/Game/SaveGame", content); 
+            logger.LogCritical("Are we there yet: ");
+            var responseMessage = await httpClient.PostAsync("/api/Game/SaveGame", content); 
+            logger.LogCritical("And what we got here: " + responseMessage);
             //Jeszcze trzeba sprawdzic moze czy sie udalo
+
             var whoHasWonStr = JsonConvert.SerializeObject(whoHasWon);
             await Clients.Group(groupName).SendAsync("MadeMove", updatedBoard, null, whoHasWonStr);
-            //await Clients.Group(groupName).SendAsync("GameOver", whoHasWon);
+
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+            await Groups.RemoveFromGroupAsync(opponentConnectionId, groupName);
 
             logger.LogInformation("We have a winner.");
             return;
@@ -46,10 +50,11 @@ public class GameHub : Hub
 
         if (isBoardFull)
         {
-            //przekazac null w who has won
-            var whoHasWonStr = JsonConvert.SerializeObject(whoHasWon);
+            var whoHasWonStr = JsonConvert.SerializeObject(GameResult.Draw);
             await Clients.Group(groupName).SendAsync("MadeMove", updatedBoard, null, whoHasWonStr);
-            //await Clients.Group(groupName).SendAsync("GameOver", null);
+
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+            await Groups.RemoveFromGroupAsync(opponentConnectionId, groupName);
 
             logger.LogInformation("We have a draw.");
             return;
@@ -60,8 +65,9 @@ public class GameHub : Hub
         var deserializedNextMove = GameLogic.DeserializeWhoMadeMove(whoMadeMove) ?? throw new JsonException("Deserialization for NEXT_MOVE can't be performed!");
         var whoIsNext = GameLogic.WhoWillBeNext(deserializedNextMove);
         var whoIsNextStr = JsonConvert.SerializeObject(whoIsNext);
+        var gameStatusStr = JsonConvert.SerializeObject(GameResult.StillInGame);
 
-        await Clients.Group(groupName).SendAsync("MadeMove", updatedBoard, whoIsNextStr, null);
+        await Clients.Group(groupName).SendAsync("MadeMove", updatedBoard, whoIsNextStr, gameStatusStr);
 
         logger.LogInformation("Method 'UpdateBoardAfterMove' has been invoked.");
     }
@@ -99,6 +105,7 @@ public class GameHub : Hub
             }
 
             ReadyPlayers.TryGetValue(opponentConnectionId, out readiness);
+            logger.LogInformation("No to mamy użytkownika: {playerConnectionId} a readiness to: {readiness}", playerConnectionId, readiness);
         }
 
         if (readiness)
@@ -162,10 +169,6 @@ public class GameHub : Hub
 
             await Clients.Client(connectionId).SendAsync("WhoIsMyOpponent", randomPlayerConnectionId, groupName);
             await Clients.Client(randomPlayerConnectionId).SendAsync("WhoIsMyOpponent", connectionId, groupName);
-
-            //await Clients.Group(groupName).S
-            //A i jak sie robią te rzeczy to wtedy dac jakis napis ze Game is being prepared.
-            //Albo {WAITNIG FOR PLAYERS TO BE READY.} w jakims popupie
         }
 
         await base.OnConnectedAsync();

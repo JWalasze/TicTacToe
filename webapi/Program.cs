@@ -40,28 +40,9 @@ app.UseCors(b => b
 //app.UseRouting();
 //app.UseWebSockets();
 
-//app.Use(async (context, next) =>
-//{
-//    if (context.Request.Path == "/moves")
-//    {
-//        if (context.WebSockets.IsWebSocketRequest)
-//        {
-//            using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-//        }
-//        else
-//        {
-//            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-//        }
-//    }
-//    else
-//    {
-//        await next(context);
-//    }
-
-//});
 app.UseMiddleware<ErrorHandlingMiddleware>();
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 

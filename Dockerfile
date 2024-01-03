@@ -3,7 +3,7 @@ FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 
 ENV ASPNETCORE_ENVIRONMENT=Development
 
-EXPOSE 7166
+EXPOSE 80
 
 WORKDIR /src
 

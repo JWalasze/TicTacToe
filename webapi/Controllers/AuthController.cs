@@ -18,14 +18,14 @@ public class AuthController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateNewPlayer(Credentials credentials)
     {
-        try
-        {
-            await _authService.CreateNewPlayer(credentials);
-            return Ok();
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, ex.ToString());
-        }
+        await _authService.CreateNewPlayer(credentials);
+        return Ok();
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetIdForUsername([FromQuery] string username)
+    {
+        var result = await _authService.GetIdForUsername(username);
+        return Ok(result);
     }
 }
