@@ -1,9 +1,8 @@
-﻿using Lib.Dtos;
+﻿using Lib.Models;
 
 namespace Lib.Services.Interfaces;
 
 public interface IAuthService
 {
-    public Task CreateNewPlayer(Credentials credentials);
-    public Task<int?> GetIdForUsername(string username);
+    public Task<int> CreateNewPlayer(Player player);
 }

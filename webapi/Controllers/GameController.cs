@@ -23,7 +23,7 @@ public class GameController : ControllerBase
     }
 
 
-    [HttpPost("SaveGame")]
+    [HttpPost("[action]")]
     public async Task<IActionResult> SaveGame([FromBody] GameToBeSavedDto game)
     {
         await _gameService.SaveGame(game);

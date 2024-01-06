@@ -18,6 +18,7 @@ public class ErrorHandlingMiddleware
         catch (Exception ex)
         {
             httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            Console.WriteLine(ex.ToString());
             await httpContext.Response.WriteAsync(ex.ToString());
         }
     }

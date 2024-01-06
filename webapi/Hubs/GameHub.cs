@@ -21,19 +21,19 @@ public class GameHub : Hub
         
         if (whoHasWon is not null)
         {
-            var httpClient = httpClientFactory.CreateClient();
-            //await Clients.Caller.InvokeAsync<(DateTime, DateTime)>("MeasureTime", default);
-            var gameToBeSaved = new GameToBeSavedDto()
-            {
+            //var httpClient = httpClientFactory.CreateClient();
+            ////await Clients.Caller.InvokeAsync<(DateTime, DateTime)>("MeasureTime", default);
+            //var gameToBeSaved = new GameToBeSavedDto()
+            //{
 
-            };
-            var content = new StringContent(
-                JsonConvert.SerializeObject(gameToBeSaved),
-                Encoding.UTF8,
-                MediaTypeNames.Application.Json);
-            logger.LogCritical("Are we there yet: ");
-            var responseMessage = await httpClient.PostAsync("/api/Game/SaveGame", content); 
-            logger.LogCritical("And what we got here: " + responseMessage);
+            //};
+            //var content = new StringContent(
+            //    JsonConvert.SerializeObject(gameToBeSaved),
+            //    Encoding.UTF8,
+            //    MediaTypeNames.Application.Json);
+            //logger.LogCritical("Are we there yet: ");
+            //var responseMessage = await httpClient.PostAsync("/api/Game/SaveGame", content); 
+            //logger.LogCritical("And what we got here: " + responseMessage);
             //Jeszcze trzeba sprawdzic moze czy sie udalo
 
             var whoHasWonStr = JsonConvert.SerializeObject(whoHasWon);

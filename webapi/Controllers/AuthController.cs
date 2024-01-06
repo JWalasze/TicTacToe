@@ -1,4 +1,6 @@
-﻿using Lib.Dtos;
+﻿using AutoMapper;
+using Lib.Dtos;
+using Lib.Models;
 using Lib.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,22 +12,26 @@ namespace webapi.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
-    public AuthController(IAuthService authService)
+    private readonly IMapper _mapper;
+
+    public AuthController(IAuthService authService, IMapper mapper)
     {
         _authService = authService;
+        _mapper = mapper;
     }
 
-    [HttpPost]
-    public async Task<IActionResult> CreateNewPlayer(Credentials credentials)
+    [HttpPost("[action]")]
+    public async Task<IActionResult> CreateNewPlayer([FromBody] Credentials credentials)
     {
-        await _authService.CreateNewPlayer(credentials);
-        return Ok();
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> GetIdForUsername([FromQuery] string username)
-    {
-        var result = await _authService.GetIdForUsername(username);
+        var newPlayer = _mapper.Map<Player>(credentials);
+        var result = await _authService.CreateNewPlayer(newPlayer);
         return Ok(result);
     }
+
+    //[HttpGet]
+    //public async Task<IActionResult> GetIdForUsername([FromQuery] string username)
+    //{
+    //    var result = await _authService.GetIdForUsername(username);
+    //    return Ok(result);
+    //}
 }
