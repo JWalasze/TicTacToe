@@ -35,8 +35,8 @@ app.UseCors(b => b
     .AllowAnyHeader()
     .AllowAnyMethod()
     .AllowCredentials()
-    //.AllowAnyOrigin()
-    .SetIsOriginAllowed((host) => true)
+    .AllowAnyOrigin()
+    //.SetIsOriginAllowed((host) => true)
 );
 //app.UseRouting();
 //app.UseWebSockets();
