@@ -16,6 +16,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSignalR();
 builder.Services.AddDbContext<ApplicationDbContext>(options => 
     options.UseSqlServer(builder.Configuration["ConnectionStrings:MyConnectionString"]));
+Console.WriteLine(builder.Configuration["ConnectionStrings:MyConnectionString"]);
 builder.Services.AddTransient<IGameService, GameService>();
 builder.Services.AddTransient<IRankingService, RankingService>();
 builder.Services.AddTransient<IAuthService, AuthService>();

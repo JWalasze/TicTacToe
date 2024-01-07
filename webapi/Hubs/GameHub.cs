@@ -11,7 +11,7 @@ namespace webapi.Hubs;
 public class GameHub : Hub
 {
     private static readonly ICollection<string> WaitingPlayers = new HashSet<string>();
-    private static readonly IDictionary<string, bool> ReadyPlayers = new Dictionary<string, bool>();
+    private static readonly IDictionary<string, InitialPlayerInfo> ReadyPlayers = new Dictionary<string, InitialPlayerInfo>();
 
     public async Task UpdateBoardAfterMove(string updatedBoard, string whoMadeMove, string groupName, string opponentConnectionId,
         ILogger<GameHub> logger, IHttpClientFactory httpClientFactory)
@@ -74,15 +74,21 @@ public class GameHub : Hub
 
     public async Task SendDataToOpponent(int playerId, string playerUsername, string opponentConnectionId, ILogger<GameHub> logger)
     {
+        lock (ReadyPlayers)
+        {
+            ReadyPlayers[Context.ConnectionId].PlayerId = playerId;
+        }
+
         await Clients.Client(opponentConnectionId).SendAsync("ReceiveOpponentDetails", playerId, playerUsername);
 
         logger.LogInformation("Method 'SendDataToOpponent' has been invoked.");
     }
 
     //GDZIE TU JEST PERFIDNY BAG BO CZASAMI POKAZUJE NA FRONCIE ZE COS ZLE CZEKA NA PLAYERA...Xd
-    public async Task SendPlayerReadiness(string opponentConnectionId , string groupName, ILogger<GameHub> logger)
+    public async Task SendPlayerReadiness(string opponentConnectionId , string groupName, 
+        ILogger<GameHub> logger, IHttpClientFactory httpClientFactory)
     {
-        bool readiness;
+        InitialPlayerInfo readiness;
         var playerConnectionId = Context.ConnectionId;
 
         lock (ReadyPlayers)
@@ -95,7 +101,7 @@ public class GameHub : Hub
                 return;
             } 
             
-            ReadyPlayers[playerConnectionId] = true;
+            ReadyPlayers[playerConnectionId].IsReady = true;
             var isOpponentFound = ReadyPlayers.ContainsKey(opponentConnectionId);
 
             if (!isOpponentFound)
@@ -108,12 +114,27 @@ public class GameHub : Hub
             logger.LogInformation("No to mamy użytkownika: {playerConnectionId} a readiness to: {readiness}", playerConnectionId, readiness);
         }
 
-        if (readiness)
+        if (readiness is not null && readiness.IsReady)
         {
             await Clients.Group(groupName).SendAsync("StartGame", 
-                $"In game with identifier: {groupName} we have: {playerConnectionId} and {opponentConnectionId}");
+                $"In game with identifier: {groupName} we have: {playerConnectionId} and {opponentConnectionId}");//przekazac game id
+
             lock (ReadyPlayers)
             {
+                //var httpClient = httpClientFactory.CreateClient();
+                
+                //var gameToBeSaved = new GameToBeSavedDto()
+                //{
+
+                //};
+                //var content = new StringContent(
+                //    JsonConvert.SerializeObject(gameToBeSaved),
+                //    Encoding.UTF8,
+                //    MediaTypeNames.Application.Json);
+                //logger.LogCritical("Are we there yet: ");
+                //var responseMessage = await httpClient.PostAsync("/api/Game/SaveGame", content); 
+                //logger.LogCritical("And what we got here: " + responseMessage);
+
                 ReadyPlayers.Remove(playerConnectionId);
                 ReadyPlayers.Remove(opponentConnectionId);
             }
@@ -158,8 +179,8 @@ public class GameHub : Hub
 
             lock (ReadyPlayers)
             {
-                ReadyPlayers.Add(connectionId,false);
-                ReadyPlayers.Add(randomPlayerConnectionId, false);
+                ReadyPlayers.Add(connectionId, new InitialPlayerInfo());
+                ReadyPlayers.Add(randomPlayerConnectionId, new InitialPlayerInfo());
             }
 
             var (piece1, piece2) = GameLogic.DrawRandomPiece();

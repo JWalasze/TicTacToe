@@ -28,10 +28,10 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-    //[HttpGet]
-    //public async Task<IActionResult> GetIdForUsername([FromQuery] string username)
-    //{
-    //    var result = await _authService.GetIdForUsername(username);
-    //    return Ok(result);
-    //}
+    [HttpGet("[action]")]
+    public async Task<IActionResult> GetIdForUsername([FromQuery] string username)
+    {
+        var result = await _authService.GetIdForUsername(username);
+        return Ok(result);
+    }
 }
