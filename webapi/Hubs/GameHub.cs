@@ -1,7 +1,9 @@
-﻿using System.Net.Mime;
+﻿using System.Net.Http;
+using System.Net.Mime;
 using System.Text;
 using Lib.Dtos;
 using Lib.Enums;
+using Lib.Models;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using webapi.Hubs.Static;
@@ -21,20 +23,14 @@ public class GameHub : Hub
         
         if (whoHasWon is not null)
         {
-            //var httpClient = httpClientFactory.CreateClient();
-            ////await Clients.Caller.InvokeAsync<(DateTime, DateTime)>("MeasureTime", default);
-            //var gameToBeSaved = new GameToBeSavedDto()
-            //{
-
-            //};
-            //var content = new StringContent(
-            //    JsonConvert.SerializeObject(gameToBeSaved),
-            //    Encoding.UTF8,
-            //    MediaTypeNames.Application.Json);
-            //logger.LogCritical("Are we there yet: ");
-            //var responseMessage = await httpClient.PostAsync("/api/Game/SaveGame", content); 
-            //logger.LogCritical("And what we got here: " + responseMessage);
-            //Jeszcze trzeba sprawdzic moze czy sie udalo
+            var httpClient = httpClientFactory.CreateClient();
+            logger.LogCritical("Are we there yet: ");
+            var content = new StringContent(
+                JsonConvert.SerializeObject(new {GameId = 18, WinnerId = 1}),
+                Encoding.UTF8,
+                MediaTypeNames.Application.Json);
+            var responseMessage = await httpClient.PatchAsync("http://localhost:5285/api/Game/UpdateGameForWinner?gameId=18&winnerId=1", content);
+            logger.LogCritical("And what we got here: " + responseMessage);
 
             var whoHasWonStr = JsonConvert.SerializeObject(whoHasWon);
             await Clients.Group(groupName).SendAsync("MadeMove", updatedBoard, null, whoHasWonStr);
@@ -117,27 +113,29 @@ public class GameHub : Hub
         if (readiness is not null && readiness.IsReady)
         {
             await Clients.Group(groupName).SendAsync("StartGame", 
-                $"In game with identifier: {groupName} we have: {playerConnectionId} and {opponentConnectionId}");//przekazac game id
+                $"In game with identifier: {groupName} we have: {playerConnectionId} and {opponentConnectionId}");
 
+            GameToBeSavedDto gameToBeSaved;
             lock (ReadyPlayers)
             {
-                //var httpClient = httpClientFactory.CreateClient();
+                gameToBeSaved = new GameToBeSavedDto()
+                {
+                    Player1Id = ReadyPlayers[opponentConnectionId].PlayerId,
+                    Player2Id = ReadyPlayers[playerConnectionId].PlayerId
+                };
                 
-                //var gameToBeSaved = new GameToBeSavedDto()
-                //{
-
-                //};
-                //var content = new StringContent(
-                //    JsonConvert.SerializeObject(gameToBeSaved),
-                //    Encoding.UTF8,
-                //    MediaTypeNames.Application.Json);
-                //logger.LogCritical("Are we there yet: ");
-                //var responseMessage = await httpClient.PostAsync("/api/Game/SaveGame", content); 
-                //logger.LogCritical("And what we got here: " + responseMessage);
-
                 ReadyPlayers.Remove(playerConnectionId);
                 ReadyPlayers.Remove(opponentConnectionId);
             }
+
+            var content = new StringContent(
+                JsonConvert.SerializeObject(gameToBeSaved),
+                Encoding.UTF8,
+                MediaTypeNames.Application.Json);
+            var httpClient = httpClientFactory.CreateClient();
+            logger.LogCritical("Are we there yet: ");
+            var responseMessage = await httpClient.PostAsync("http://localhost:5285/api/Game/SaveGame", content);
+            logger.LogCritical("And what we got here: " + responseMessage);
 
             logger.LogInformation("Game for group: {groupName} is starting now.", groupName);
         }
