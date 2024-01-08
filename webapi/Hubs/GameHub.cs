@@ -23,14 +23,14 @@ public class GameHub : Hub
         
         if (whoHasWon is not null)
         {
-            var httpClient = httpClientFactory.CreateClient();
+            /*var httpClient = httpClientFactory.CreateClient();
             logger.LogCritical("Are we there yet: ");
             var content = new StringContent(
                 JsonConvert.SerializeObject(new {GameId = 18, WinnerId = 1}),
                 Encoding.UTF8,
                 MediaTypeNames.Application.Json);
             var responseMessage = await httpClient.PatchAsync("http://localhost:5285/api/Game/UpdateGameForWinner?gameId=18&winnerId=1", content);
-            logger.LogCritical("And what we got here: " + responseMessage);
+            logger.LogCritical("And what we got here: " + responseMessage);*/
 
             var whoHasWonStr = JsonConvert.SerializeObject(whoHasWon);
             await Clients.Group(groupName).SendAsync("MadeMove", updatedBoard, null, whoHasWonStr);
@@ -128,14 +128,14 @@ public class GameHub : Hub
                 ReadyPlayers.Remove(opponentConnectionId);
             }
 
-            var content = new StringContent(
+            /*var content = new StringContent(
                 JsonConvert.SerializeObject(gameToBeSaved),
                 Encoding.UTF8,
                 MediaTypeNames.Application.Json);
             var httpClient = httpClientFactory.CreateClient();
             logger.LogCritical("Are we there yet: ");
             var responseMessage = await httpClient.PostAsync("http://localhost:5285/api/Game/SaveGame", content);
-            logger.LogCritical("And what we got here: " + responseMessage);
+            logger.LogCritical("And what we got here: " + responseMessage);*/
 
             logger.LogInformation("Game for group: {groupName} is starting now.", groupName);
         }
