@@ -1,4 +1,4 @@
-﻿using Lib.Dtos;
+﻿using System.Text;
 using Lib.Models;
 using Lib.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +16,15 @@ public class AuthService : IAuthService
 
     public async Task<int> CreateNewPlayer(Player player)
     {
-        var result = await _dbContext.Players.AddAsync(player);
+        var encode = Encoding.UTF8.GetBytes(player.Password);
+
+        var result = await _dbContext.Players.AddAsync(new Player
+        {
+            Username = player.Username,
+            Email = player.Email,
+            Password = Convert.ToBase64String(encode)
+        });
+
         await _dbContext.SaveChangesAsync();
         return result.Entity.Id;
     }

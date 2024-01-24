@@ -1,18 +1,22 @@
-﻿using Lib.Models;
+﻿using Lib.Enums;
 
 namespace Lib.Dtos;
 
 public record GameDto
 {
-    public int Id { get; set; }
+    public string Id { get; set; } = null!;
 
-    public string Player1Username { get; set; }
+    public string Player1Username { get; set; } = null!;
 
-    public string Player2Username { get; set; }
+    public Piece Player1Piece { get; set; }
 
-    public DateTime StartTime { get; set; }
+    public string Player2Username { get; set; } = null!;
 
-    public DateTime EndTime { get; set; }
+    public Piece Player2Piece { get; set; }
+
+    public DateTime? StartTime { get; set; }
+
+    public DateTime? EndTime { get; set; }
 
     public string? WinnerUsername { get; set; }
 }

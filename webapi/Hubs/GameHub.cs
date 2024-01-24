@@ -1,10 +1,11 @@
-﻿using System.Net.Http;
-using System.Net.Mime;
+﻿using System.Net.Mime;
 using System.Text;
 using Lib.Dtos;
+using Lib.Dtos.Extensions;
 using Lib.Enums;
-using Lib.Models;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using webapi.Hubs.Static;
 
@@ -13,183 +14,266 @@ namespace webapi.Hubs;
 public class GameHub : Hub
 {
     private static readonly ICollection<string> WaitingPlayers = new HashSet<string>();
-    private static readonly IDictionary<string, InitialPlayerInfo> ReadyPlayers = new Dictionary<string, InitialPlayerInfo>();
+    private static readonly IDictionary<string, GameInfo> GamesInfo = new Dictionary<string, GameInfo>();
 
-    public async Task UpdateBoardAfterMove(string updatedBoard, string whoMadeMove, string groupName, string opponentConnectionId,
-        ILogger<GameHub> logger, IHttpClientFactory httpClientFactory)
+    public async Task FindGame(int playerId, string playerUsername, ILogger<GameHub> logger)
     {
-        var deserializedBoard = GameLogic.DeserializeBoard(updatedBoard) ?? throw new JsonException("Deserialization for BOARD can't be performed!");
-        var whoHasWon = GameLogic.SearchForTheWInner(deserializedBoard);
-        
-        if (whoHasWon is not null)
-        {
-            /*var httpClient = httpClientFactory.CreateClient();
-            logger.LogCritical("Are we there yet: ");
-            var content = new StringContent(
-                JsonConvert.SerializeObject(new {GameId = 18, WinnerId = 1}),
-                Encoding.UTF8,
-                MediaTypeNames.Application.Json);
-            var responseMessage = await httpClient.PatchAsync("http://localhost:5285/api/Game/UpdateGameForWinner?gameId=18&winnerId=1", content);
-            logger.LogCritical("And what we got here: " + responseMessage);*/
-
-            var whoHasWonStr = JsonConvert.SerializeObject(whoHasWon);
-            await Clients.Group(groupName).SendAsync("MadeMove", updatedBoard, null, whoHasWonStr);
-
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
-            await Groups.RemoveFromGroupAsync(opponentConnectionId, groupName);
-
-            logger.LogInformation("We have a winner.");
-            return;
-        }
-
-        var isBoardFull = GameLogic.CheckIfBoardIsFull(deserializedBoard);
-
-        if (isBoardFull)
-        {
-            var whoHasWonStr = JsonConvert.SerializeObject(GameResult.Draw);
-            await Clients.Group(groupName).SendAsync("MadeMove", updatedBoard, null, whoHasWonStr);
-
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
-            await Groups.RemoveFromGroupAsync(opponentConnectionId, groupName);
-
-            logger.LogInformation("We have a draw.");
-            return;
-        }
-
-        //Niepoprawny group z klienta dlatego nie bylo wiadomosci
-        //Trzeba sprawdzac czy sa w grze napewno obydwoje...
-        var deserializedNextMove = GameLogic.DeserializeWhoMadeMove(whoMadeMove) ?? throw new JsonException("Deserialization for NEXT_MOVE can't be performed!");
-        var whoIsNext = GameLogic.WhoWillBeNext(deserializedNextMove);
-        var whoIsNextStr = JsonConvert.SerializeObject(whoIsNext);
-        var gameStatusStr = JsonConvert.SerializeObject(GameResult.StillInGame);
-
-        await Clients.Group(groupName).SendAsync("MadeMove", updatedBoard, whoIsNextStr, gameStatusStr);
-
-        logger.LogInformation("Method 'UpdateBoardAfterMove' has been invoked.");
-    }
-
-    public async Task SendDataToOpponent(int playerId, string playerUsername, string opponentConnectionId, ILogger<GameHub> logger)
-    {
-        lock (ReadyPlayers)
-        {
-            ReadyPlayers[Context.ConnectionId].PlayerId = playerId;
-        }
-
-        await Clients.Client(opponentConnectionId).SendAsync("ReceiveOpponentDetails", playerId, playerUsername);
-
-        logger.LogInformation("Method 'SendDataToOpponent' has been invoked.");
-    }
-
-    //GDZIE TU JEST PERFIDNY BAG BO CZASAMI POKAZUJE NA FRONCIE ZE COS ZLE CZEKA NA PLAYERA...Xd
-    public async Task SendPlayerReadiness(string opponentConnectionId , string groupName, 
-        ILogger<GameHub> logger, IHttpClientFactory httpClientFactory)
-    {
-        InitialPlayerInfo readiness;
         var playerConnectionId = Context.ConnectionId;
-
-        lock (ReadyPlayers)
-        {
-            var success = ReadyPlayers.TryGetValue(playerConnectionId, out _);
-
-            if (!success)
-            {
-                logger.LogError("Error: Invalid group name or player does not exist!");
-                return;
-            } 
-            
-            ReadyPlayers[playerConnectionId].IsReady = true;
-            var isOpponentFound = ReadyPlayers.ContainsKey(opponentConnectionId);
-
-            if (!isOpponentFound)
-            {
-                logger.LogError("Error: Invalid group name or player does not exist!");
-                return;
-            }
-
-            ReadyPlayers.TryGetValue(opponentConnectionId, out readiness);
-            logger.LogInformation("No to mamy użytkownika: {playerConnectionId} a readiness to: {readiness}", playerConnectionId, readiness);
-        }
-
-        if (readiness is not null && readiness.IsReady)
-        {
-            await Clients.Group(groupName).SendAsync("StartGame", 
-                $"In game with identifier: {groupName} we have: {playerConnectionId} and {opponentConnectionId}");
-
-            GameToBeSavedDto gameToBeSaved;
-            lock (ReadyPlayers)
-            {
-                gameToBeSaved = new GameToBeSavedDto()
-                {
-                    Player1Id = ReadyPlayers[opponentConnectionId].PlayerId,
-                    Player2Id = ReadyPlayers[playerConnectionId].PlayerId
-                };
-                
-                ReadyPlayers.Remove(playerConnectionId);
-                ReadyPlayers.Remove(opponentConnectionId);
-            }
-
-            /*var content = new StringContent(
-                JsonConvert.SerializeObject(gameToBeSaved),
-                Encoding.UTF8,
-                MediaTypeNames.Application.Json);
-            var httpClient = httpClientFactory.CreateClient();
-            logger.LogCritical("Are we there yet: ");
-            var responseMessage = await httpClient.PostAsync("http://localhost:5285/api/Game/SaveGame", content);
-            logger.LogCritical("And what we got here: " + responseMessage);*/
-
-            logger.LogInformation("Game for group: {groupName} is starting now.", groupName);
-        }
-        else
-        {
-            logger.LogInformation("Opponent for {playerConnectionId} is still not ready.", playerConnectionId);
-        }
-    }
-
-    public override async Task OnConnectedAsync()
-    {
-        var connectionId = Context.ConnectionId;
-
-        string? randomPlayerConnectionId = null;
-        var shouldGameStart = false;
-
+        string? opponentConnectionId = null;
+        
         lock (WaitingPlayers)
         {
             if (WaitingPlayers.Count is not 0)
             {
                 var randomPlayer = RandomGenerator.Draw(0, WaitingPlayers.Count - 1);
-                randomPlayerConnectionId = WaitingPlayers.ToList()[randomPlayer];
-                shouldGameStart = true;
+                opponentConnectionId = WaitingPlayers.ToList()[randomPlayer];
 
-                WaitingPlayers.Remove(randomPlayerConnectionId);
+                WaitingPlayers.Remove(opponentConnectionId);
             }
             else
             {
-                WaitingPlayers.Add(connectionId);
+                WaitingPlayers.Add(playerConnectionId);
             }
         }
 
-        if (shouldGameStart && randomPlayerConnectionId is not null)
+        lock (GamesInfo)
         {
-            var groupName = GameLogic.CreateUniqueGroupName();
+            var playerGameInfo = new GameInfoBuilder()
+                .WithPlayerId(playerId)
+                .WithPlayerUsername(playerUsername)
+                .Build();
 
-            await Groups.AddToGroupAsync(connectionId, groupName);
-            await Groups.AddToGroupAsync(randomPlayerConnectionId, groupName);
+            GamesInfo.Add(playerConnectionId, playerGameInfo);
+        }
 
-            lock (ReadyPlayers)
-            {
-                ReadyPlayers.Add(connectionId, new InitialPlayerInfo());
-                ReadyPlayers.Add(randomPlayerConnectionId, new InitialPlayerInfo());
-            }
+        if (opponentConnectionId is not null)
+        {
+            logger.LogInformation("Game is being prepared.");
 
+            var gameId = GameLogic.CreateUniqueGameId();
             var (piece1, piece2) = GameLogic.DrawRandomPiece();
 
-            await Clients.Client(connectionId).SendAsync("AssignPiece", JsonConvert.SerializeObject(piece1));
-            await Clients.Client(randomPlayerConnectionId).SendAsync("AssignPiece", JsonConvert.SerializeObject(piece2));
+            await Groups.AddToGroupAsync(playerConnectionId, gameId);
+            await Groups.AddToGroupAsync(opponentConnectionId, gameId);
 
-            await Clients.Client(connectionId).SendAsync("WhoIsMyOpponent", randomPlayerConnectionId, groupName);
-            await Clients.Client(randomPlayerConnectionId).SendAsync("WhoIsMyOpponent", connectionId, groupName);
+            GameInfo? playerGameInfo;
+            GameInfo? opponentGameInfo;
+
+            lock (GamesInfo)
+            {
+                GamesInfo.TryGetValue(playerConnectionId, out playerGameInfo);
+                GamesInfo.TryGetValue(opponentConnectionId, out opponentGameInfo);
+
+                if (playerGameInfo is null || opponentGameInfo is null)
+                {
+                    logger.LogError("Error during preparing the game ({gameId}) for: {conn1} and {conn2}", gameId, playerConnectionId, opponentConnectionId);
+                    throw new Exception("Couldn't establish a game.");
+                }
+
+                playerGameInfo.GameId = gameId;
+                playerGameInfo.OpponentConnectionId = opponentConnectionId;
+                playerGameInfo.OpponentId = opponentGameInfo.PlayerId;
+                playerGameInfo.OpponentUsername = opponentGameInfo.PlayerUsername;
+                playerGameInfo.OpponentPiece = piece2;
+                playerGameInfo.PlayerPiece = piece1;
+               
+                opponentGameInfo.GameId = gameId;
+                opponentGameInfo.OpponentConnectionId = playerConnectionId;
+                opponentGameInfo.OpponentId = playerGameInfo.PlayerId;
+                opponentGameInfo.OpponentUsername = playerGameInfo.PlayerUsername;
+                opponentGameInfo.OpponentPiece = piece1;
+                opponentGameInfo.PlayerPiece = piece2;
+            }
+
+            await Clients.Client(playerConnectionId).SendAsync("GetGameDetails", JsonConvert.SerializeObject(playerGameInfo));
+            await Clients.Client(opponentConnectionId).SendAsync("GetGameDetails", JsonConvert.SerializeObject(opponentGameInfo));
+
+            logger.LogInformation("Details have been sent to players");
+        }
+    }
+
+    
+    public async Task UpdateBoardAfterMove(string updatedBoard, string whoMadeMove, ILogger<GameHub> logger, IHttpClientFactory httpClientFactory)
+    {
+        var deserializedBoard = GameLogic.DeserializeBoard(updatedBoard) ?? throw new JsonException("Deserialization of BOARD can't be performed!");
+        var deserializedWhoMadeMove = GameLogic.DeserializeWhoMadeMove(whoMadeMove) ?? throw new JsonException("Deserialization of WHO_MADE_MOVE can't be performed!");
+
+        var whoIsNext = GameLogic.WhoWillBeNext(deserializedWhoMadeMove);
+        var whoHasWon = GameLogic.SearchForTheWinner(deserializedBoard);
+
+        var playerConnectionId = Context.ConnectionId;
+        GameInfo? playerGameInfo;
+
+        lock (GamesInfo)
+        {
+            GamesInfo.TryGetValue(Context.ConnectionId, out playerGameInfo);
+
+            if (playerGameInfo is null)
+            {
+                logger.LogError("Error: Invalid connection ID or the game does not exist!");
+                throw new Exception("Couldn't update the game!");
+            }
+
+            if (playerGameInfo.HaveNullValues())
+            {
+                logger.LogError("Error: Some values of GameInfo are invalid!!");
+                throw new Exception("Couldn't update the game!");
+            }
         }
 
+        if (whoHasWon is not null)
+        {
+            var httpClient = httpClientFactory.CreateClient();
+            var winnerId = GameLogic.MatchWinnerPieceToPlayerId((Piece)whoHasWon, playerGameInfo);
+
+            var content = new StringContent(
+                JsonConvert.SerializeObject(new GameUpdateInfoDto {GameId = playerGameInfo.GameId!, WinnerId = winnerId}),
+                Encoding.UTF8,
+                MediaTypeNames.Application.Json);
+
+            //Options pattern
+            var responseMessage = await httpClient.PatchAsync("https://localhost:7166/api/Game/UpdateGameForWinner", content);
+            if (!responseMessage.IsSuccessStatusCode)
+            {
+                logger.LogError("Error during calling the API: {errorMessage}", responseMessage.ToString());
+            }
+
+            var newGameStatus = GameLogic.ReturnGameStatusBasedOnWhoWon((Piece)whoHasWon);
+            var gameStatus = JsonConvert.SerializeObject(newGameStatus);
+
+            await Clients.Group(playerGameInfo.GameId!).SendAsync("MadeMove", updatedBoard, null, gameStatus);
+
+            await Groups.RemoveFromGroupAsync(playerConnectionId, playerGameInfo.GameId!);
+            await Groups.RemoveFromGroupAsync(playerGameInfo.OpponentConnectionId!, playerGameInfo.GameId!);
+
+            logger.LogInformation("In the game {gameId} we have a winner ({whoHasWon}) with ID: {winnerId}", playerGameInfo.GameId, whoHasWon, winnerId);
+            return;
+        }
+
+        var isBoardFull = GameLogic.CheckIfBoardIsFull(deserializedBoard);
+        if (isBoardFull)
+        {
+            var httpClient = httpClientFactory.CreateClient();
+
+            var content = new StringContent(
+                JsonConvert.SerializeObject(new GameUpdateInfoDto { GameId = playerGameInfo.GameId! }),
+                Encoding.UTF8,
+                MediaTypeNames.Application.Json);
+
+            //Options pattern
+            var responseMessage = await httpClient.PatchAsync("https://localhost:7166/api/Game/UpdateGameForWinner", content);
+            if (!responseMessage.IsSuccessStatusCode)
+            {
+                logger.LogError("Error during calling the API: {errorMessage}", responseMessage.ToString());
+            }
+
+            var gameStatus = JsonConvert.SerializeObject(GameStatus.Draw);
+
+            await Clients.Group(playerGameInfo.GameId!).SendAsync("MadeMove", updatedBoard, null, gameStatus);
+
+            await Groups.RemoveFromGroupAsync(playerConnectionId, playerGameInfo.GameId!);
+            await Groups.RemoveFromGroupAsync(playerGameInfo.OpponentConnectionId!, playerGameInfo.GameId!);
+
+            logger.LogInformation("In the game {gameId} we have a draw", playerGameInfo.GameId);
+            return;
+        }
+        
+        var serializedWhoIsNext = JsonConvert.SerializeObject(whoIsNext);
+        var serializedGameStatus = JsonConvert.SerializeObject(GameStatus.StillInGame);
+
+        await Clients.Group(playerGameInfo.GameId!).SendAsync("MadeMove", updatedBoard, serializedWhoIsNext, serializedGameStatus);
+
+        logger.LogInformation("Method 'UpdateBoardAfterMove' has been invoked.");
+    }
+
+    
+    public async Task SendPlayerReadiness(ILogger<GameHub> logger, IHttpClientFactory httpClientFactory)
+    {
+        var playerConnectionId = Context.ConnectionId;
+        string? opponentConnectionId;
+        GameInfo? playerGameInfo;
+        GameInfo? opponentGameInfo;
+
+        lock (GamesInfo)
+        {
+            GamesInfo.TryGetValue(playerConnectionId, out playerGameInfo);
+
+            if (playerGameInfo is null)
+            {
+                logger.LogError("Error: Invalid group name or player does not exist!");
+                throw new Exception("Couldn't establish a game.");
+            }
+
+            opponentConnectionId = playerGameInfo.OpponentConnectionId;
+
+            if (opponentConnectionId is null)
+            {
+                logger.LogError("Error: Invalid group name or player does not exist!");
+                throw new Exception("Couldn't establish a game.");
+            }
+
+            GamesInfo.TryGetValue(opponentConnectionId, out opponentGameInfo);
+
+            if (opponentGameInfo is null)
+            {
+                logger.LogError("Error: Invalid group name or player does not exist!");
+                throw new Exception("Couldn't establish a game.");
+            }
+
+            if (playerGameInfo.HaveNullValues())
+            {
+                logger.LogError("Error: Some values of GameInfo are invalid!!");
+                throw new Exception("Couldn't update the game!");
+            }
+
+            playerGameInfo.IsPlayerReady = true;
+            opponentGameInfo.IsOpponentReady = true;
+
+            logger.LogInformation("We have a ready player: {playerConnectionId} in a game {gameId}", playerConnectionId, playerGameInfo.GameId);
+
+            if (!playerGameInfo.IsPlayerReady || !opponentGameInfo.IsPlayerReady)
+            {
+                logger.LogInformation("Opponent for {playerConnectionId} is still not ready.", playerConnectionId);
+                return;
+            }
+        }
+
+        if (playerGameInfo.HaveNullValues() || opponentGameInfo.HaveNullValues())
+        {
+            logger.LogError("Error: Invalid group name or player does not exist!");
+            throw new Exception("Couldn't establish a game.");
+        }
+
+        await Clients.Group(playerGameInfo.GameId!).SendAsync("StartGame", 
+            $"In game with identifier: {playerGameInfo.GameId} we have: {playerConnectionId} and {opponentConnectionId}");
+
+        logger.LogInformation("Game for group: {groupName} is starting now.", playerGameInfo.GameId);
+
+        var httpClient = httpClientFactory.CreateClient();
+        var gameToBeSaved = new GameInitialStateDto()
+        {
+            GameId = playerGameInfo.GameId!,
+            Player1Id = (int)playerGameInfo.PlayerId!,
+            Player2Id = (int)opponentGameInfo.PlayerId!,
+            Player1Piece = (Piece)playerGameInfo.PlayerPiece!,
+            Player2Piece = (Piece)opponentGameInfo.PlayerPiece!
+        };
+
+        var content = new StringContent(
+                JsonConvert.SerializeObject(gameToBeSaved),
+                Encoding.UTF8,
+                MediaTypeNames.Application.Json);
+        
+        var responseMessage = await httpClient.PostAsync("https://localhost:7166/api/Game/SaveInitialGameState", content);
+
+        if (!responseMessage.IsSuccessStatusCode)
+        {
+            logger.LogError("Error during calling the API: {errorMessage}", responseMessage.ToString());
+        }
+    }
+
+    public override async Task OnConnectedAsync()
+    {
         await base.OnConnectedAsync();
     }
 
@@ -197,16 +281,12 @@ public class GameHub : Hub
     {
         lock (WaitingPlayers)
         {
-            var connectionToDelete = WaitingPlayers.FirstOrDefault(connectionId => connectionId == Context.ConnectionId);
-            if (connectionToDelete is not null)
-            {
-                WaitingPlayers.Remove(connectionToDelete);
-            }
+            WaitingPlayers.Remove(Context.ConnectionId);
         }
 
-        lock (ReadyPlayers)
+        lock (GamesInfo)
         {
-            ReadyPlayers.Remove(Context.ConnectionId);
+            GamesInfo.Remove(Context.ConnectionId);
         }
 
         await base.OnDisconnectedAsync(exception);

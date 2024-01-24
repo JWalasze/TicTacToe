@@ -1,14 +1,8 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+﻿namespace Lib.Enums;
 
-namespace Lib.Enums;
-
-[JsonConverter(typeof(StringEnumConverter))]
 public enum GameResult
 {
-    Circle,
-    Cross,
-    Draw,
-    Unfinished,
-    StillInGame
+    Draw = 0,
+    Won = 1,
+    Loss = 2
 }

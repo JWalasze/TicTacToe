@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Lib.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20231129144059_v1")]
-    partial class v1
+    [Migration("20240114101308_v3")]
+    partial class v3
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,22 +27,33 @@ namespace Lib.Migrations
 
             modelBuilder.Entity("Lib.Models.Game", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("EndTime")
+                    b.Property<DateTime?>("EndTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("GameStatus")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValue("BeingPrepared");
 
                     b.Property<int>("Player1Id")
                         .HasColumnType("int");
 
+                    b.Property<string>("Player1Piece")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Player2Id")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("StarTime")
+                    b.Property<string>("Player2Piece")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("StarTime")
                         .HasColumnType("datetime2");
 
                     b.Property<int?>("WinnerId")
@@ -72,6 +83,10 @@ namespace Lib.Migrations
                         .HasColumnType("int")
                         .HasDefaultValue(0);
 
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("LostGames")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
@@ -83,7 +98,7 @@ namespace Lib.Migrations
 
                     b.Property<string>("Username")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("WonGames")
                         .ValueGeneratedOnAdd()
@@ -91,9 +106,6 @@ namespace Lib.Migrations
                         .HasDefaultValue(0);
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Username")
-                        .IsUnique();
 
                     b.ToTable("Players");
                 });

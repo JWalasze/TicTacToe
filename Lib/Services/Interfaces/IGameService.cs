@@ -5,8 +5,8 @@ namespace Lib.Services.Interfaces
 {
     public interface IGameService
     {
-        public Task<int> SaveGame(Game game);
+        public Task SaveInitialGameState(Game game);
 
-        public Task UpdateGame(int gameId, int winnerId);
+        public Task UpdateGameForWinner(GameUpdateInfoDto gameUpdateInfo);
     }
 }

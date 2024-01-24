@@ -4,6 +4,7 @@ using Lib;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Lib.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240114100952_v2")]
+    partial class v2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,16 +42,14 @@ namespace Lib.Migrations
                     b.Property<int>("Player1Id")
                         .HasColumnType("int");
 
-                    b.Property<string>("Player1Piece")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Player1Piece")
+                        .HasColumnType("int");
 
                     b.Property<int>("Player2Id")
                         .HasColumnType("int");
 
-                    b.Property<string>("Player2Piece")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Player2Piece")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("StarTime")
                         .HasColumnType("datetime2");

@@ -8,7 +8,8 @@ public class MapperProfile : Profile
 {
     public MapperProfile()
     {
-        CreateMap<GameToBeSavedDto, Game>();
+        CreateMap<GameInitialStateDto, Game>().ForMember(initialGame => initialGame.Id, 
+            act => act.MapFrom(src => src.GameId));
         CreateMap<Credentials, Player>();
     }
 }

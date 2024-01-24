@@ -17,8 +17,9 @@ namespace Lib.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Username = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Username = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     WonGames = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     LostGames = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     DrawGames = table.Column<int>(type: "int", nullable: false, defaultValue: 0)
@@ -32,13 +33,15 @@ namespace Lib.Migrations
                 name: "Games",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Player1Id = table.Column<int>(type: "int", nullable: false),
+                    Player1Piece = table.Column<int>(type: "int", nullable: false),
                     Player2Id = table.Column<int>(type: "int", nullable: false),
-                    StarTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EndTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    WinnerId = table.Column<int>(type: "int", nullable: true)
+                    Player2Piece = table.Column<int>(type: "int", nullable: false),
+                    StarTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    EndTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    WinnerId = table.Column<int>(type: "int", nullable: true),
+                    GameStatus = table.Column<int>(type: "int", nullable: false, defaultValue: 5)
                 },
                 constraints: table =>
                 {
@@ -77,12 +80,6 @@ namespace Lib.Migrations
                 name: "IX_Games_WinnerId",
                 table: "Games",
                 column: "WinnerId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Players_Username",
-                table: "Players",
-                column: "Username",
-                unique: true);
         }
 
         /// <inheritdoc />

@@ -1,4 +1,6 @@
-﻿using Lib.Services.Interfaces;
+﻿using Lib.Enums;
+using Lib.Services;
+using Lib.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using webapi.Controllers.Static;
 
@@ -54,5 +56,74 @@ public class RankingController : ControllerBase
 
         var result = await _rankingService.GetPlayerScore(playerId);
         return result is null ? Problem("Player ID not found!", statusCode: 400) : Ok(result);
+    }
+
+    [HttpPatch("[action]")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdatePlayerScoreForWin([FromBody] int playerId)
+    {
+        if (CheckingParameters.AreIntParametersDefault(playerId))
+        {
+            return BadRequest("Invalid playerId");
+        }
+
+        try
+        {
+            await _rankingService.UpdatePlayerScore(playerId, GameResult.Won);
+        }
+        catch (Exception e)
+        {
+            return Problem(e.Message, statusCode: 404);
+        }
+
+        return Ok();
+    }
+
+    [HttpPatch("[action]")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdatePlayerScoreForLoss([FromBody] int playerId)
+    {
+        if (CheckingParameters.AreIntParametersDefault(playerId))
+        {
+            return BadRequest("Invalid playerId");
+        }
+
+        try
+        {
+            await _rankingService.UpdatePlayerScore(playerId, GameResult.Won);
+        }
+        catch (Exception e)
+        {
+            return Problem(e.Message, statusCode: 404);
+        }
+
+        return Ok();
+    }
+
+    [HttpPatch("[action]")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdatePlayerScoreForDraw([FromBody] int playerId)
+    {
+        if (CheckingParameters.AreIntParametersDefault(playerId))
+        {
+            return BadRequest("Invalid playerId");
+        }
+
+        try
+        {
+            await _rankingService.UpdatePlayerScore(playerId, GameResult.Won);
+        }
+        catch (Exception e)
+        {
+            return Problem(e.Message, statusCode: 404);
+        }
+
+        return Ok();
     }
 }

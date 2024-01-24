@@ -4,6 +4,7 @@ using Lib.Models;
 using Lib.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using webapi.Controllers.Static;
 using webapi.Hubs;
 
 namespace webapi.Controllers;
@@ -25,17 +26,45 @@ public class GameController : ControllerBase
 
 
     [HttpPost("[action]")]
-    public async Task<IActionResult> SaveGame([FromBody] GameToBeSavedDto game)
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> SaveInitialGameState([FromBody] GameInitialStateDto gameInitialState)
     {
-        var result = _mapper.Map<Game>(game);
-        await _gameService.SaveGame(result);
+        if (CheckingParameters.AreParametersInvalid(
+                gameInitialState.GameId, 
+                gameInitialState.Player1Id, 
+                gameInitialState.Player1Piece, 
+                gameInitialState.Player2Id, 
+                gameInitialState.Player2Piece))
+        {
+            return BadRequest("Invalid Initial Game!");
+        }
+        
+        var game = _mapper.Map<Game>(gameInitialState);
+        await _gameService.SaveInitialGameState(game);
         return Ok();
     }
 
     [HttpPatch("[action]")]
-    public async Task<IActionResult> UpdateGameForWinner([FromQuery] int gameId, [FromQuery] int winnerId)
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateGameForWinner([FromBody] GameUpdateInfoDto gameUpdateInfo)
     {
-        await _gameService.UpdateGame(gameId, winnerId);
+        if (CheckingParameters.AreParametersInvalid(gameUpdateInfo.GameId))
+        {
+            return BadRequest("Invalid Game ID!");
+        }
+        
+        try
+        {
+            await _gameService.UpdateGameForWinner(gameUpdateInfo);
+        }
+        catch (Exception e)
+        {
+            return Problem(e.Message, statusCode: 404);
+        }
+
         return Ok();
     }
 }
